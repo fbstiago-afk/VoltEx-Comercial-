@@ -1,0 +1,35 @@
+table Seg_SWOT
+	lineageTag: 78e9290b-6110-5e8c-a6e9-1abcfc8e4d54
+
+	column Ordem
+		dataType: int64
+		isHidden
+		lineageTag: 18c08693-7892-5a05-a93a-10bbf8a2766c
+		summarizeBy: none
+		sourceColumn: Ordem
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quadrante
+		dataType: string
+		lineageTag: 7e9032eb-7b8e-5fc0-a2bc-cb3fb4de5f13
+		summarizeBy: none
+		sourceColumn: Quadrante
+		sortByColumn: Ordem
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Seg_SWOT = m
+		mode: import
+		source =
+				let
+				    // Porte (quantidade vs média da base) × tendência (vs mesmo período do ano anterior)
+				    Resultado = #table (
+				        type table [Ordem = Int64.Type, Quadrante = text],
+				        { { 1, "Fortalezas" }, { 2, "Atenção" }, { 3, "Oportunidades" }, { 4, "Fraquezas" } }
+				    )
+				in
+				    Resultado
+
+	annotation PBI_ResultType = Table
+

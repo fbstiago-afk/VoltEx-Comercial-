@@ -1,0 +1,340 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "56ecf7176d7c28eb323f",
+  "position": {
+    "x": 96,
+    "y": 180,
+    "z": 1110,
+    "height": 424,
+    "width": 712,
+    "tabOrder": 1110
+  },
+  "visual": {
+    "visualType": "deneb7E15AEF80B9E4D4F8E12924291ECE89A",
+    "query": {
+      "queryState": {
+        "dataset": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Cliente"
+                    }
+                  },
+                  "Property": "Cliente_Rotulo"
+                }
+              },
+              "queryRef": "Dim_Cliente.Cliente_Rotulo",
+              "nativeQueryRef": "Cliente_Rotulo",
+              "displayName": "Cliente"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Cliente"
+                    }
+                  },
+                  "Property": "Ramo_Atividade"
+                }
+              },
+              "queryRef": "Dim_Cliente.Ramo_Atividade",
+              "nativeQueryRef": "Ramo_Atividade",
+              "displayName": "Ramo"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Municipio"
+                    }
+                  },
+                  "Property": "Municipio"
+                }
+              },
+              "queryRef": "Dim_Municipio.Municipio",
+              "nativeQueryRef": "Municipio",
+              "displayName": "Municipio"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "Quantidade"
+                }
+              },
+              "queryRef": "_Medidas.Quantidade",
+              "nativeQueryRef": "Quantidade",
+              "displayName": "Qtd"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "Quantidade AA"
+                }
+              },
+              "queryRef": "_Medidas.Quantidade AA",
+              "nativeQueryRef": "Quantidade AA",
+              "displayName": "QtdAA"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "Média Qtd por Cliente"
+                }
+              },
+              "queryRef": "_Medidas.Média Qtd por Cliente",
+              "nativeQueryRef": "Média Qtd por Cliente",
+              "displayName": "Media"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "vega": [
+        {
+          "properties": {
+            "jsonSpec": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\n  \"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\",\n  \"data\": {\n    \"name\": \"dataset\"\n  },\n  \"config\": {\n    \"background\": \"transparent\",\n    \"view\": {\n      \"stroke\": null\n    },\n    \"font\": \"Segoe UI\",\n    \"axis\": {\n      \"labelColor\": \"#9AA6B0\",\n      \"labelFont\": \"Segoe UI\",\n      \"labelFontSize\": 10,\n      \"titleColor\": \"#9AA6B0\",\n      \"titleFont\": \"Segoe UI\",\n      \"titleFontWeight\": \"normal\",\n      \"titleFontSize\": 10,\n      \"domain\": false,\n      \"ticks\": false,\n      \"gridColor\": \"#2C363E\"\n    },\n    \"legend\": {\n      \"labelColor\": \"#9AA6B0\",\n      \"titleColor\": \"#9AA6B0\",\n      \"labelFont\": \"Segoe UI\"\n    },\n    \"title\": {\n      \"color\": \"#C9D3DB\",\n      \"font\": \"Segoe UI Semibold\",\n      \"fontSize\": 12,\n      \"fontWeight\": \"normal\",\n      \"anchor\": \"start\",\n      \"offset\": 12\n    },\n    \"locale\": {\n      \"number\": {\n        \"decimal\": \",\",\n        \"thousands\": \".\",\n        \"grouping\": [\n          3\n        ],\n        \"currency\": [\n          \"R$ \",\n          \"\"\n        ]\n      },\n      \"time\": {\n        \"dateTime\": \"%A, %e de %B de %Y. %X\",\n        \"date\": \"%d/%m/%Y\",\n        \"time\": \"%H:%M:%S\",\n        \"periods\": [\n          \"AM\",\n          \"PM\"\n        ],\n        \"days\": [\n          \"Domingo\",\n          \"Segunda\",\n          \"Terça\",\n          \"Quarta\",\n          \"Quinta\",\n          \"Sexta\",\n          \"Sábado\"\n        ],\n        \"shortDays\": [\n          \"Dom\",\n          \"Seg\",\n          \"Ter\",\n          \"Qua\",\n          \"Qui\",\n          \"Sex\",\n          \"Sáb\"\n        ],\n        \"months\": [\n          \"Janeiro\",\n          \"Fevereiro\",\n          \"Março\",\n          \"Abril\",\n          \"Maio\",\n          \"Junho\",\n          \"Julho\",\n          \"Agosto\",\n          \"Setembro\",\n          \"Outubro\",\n          \"Novembro\",\n          \"Dezembro\"\n        ],\n        \"shortMonths\": [\n          \"Jan\",\n          \"Fev\",\n          \"Mar\",\n          \"Abr\",\n          \"Mai\",\n          \"Jun\",\n          \"Jul\",\n          \"Ago\",\n          \"Set\",\n          \"Out\",\n          \"Nov\",\n          \"Dez\"\n        ]\n      }\n    }\n  },\n  \"title\": {\n    \"text\": \"Clientes por porte e tendência · cada ponto é um cliente\"\n  },\n  \"width\": \"container\",\n  \"height\": \"container\",\n  \"transform\": [\n    {\n      \"filter\": \"datum[''Qtd''] > 0\"\n    },\n    {\n      \"calculate\": \"isValid(datum[''QtdAA'']) && datum[''QtdAA''] > 0 ? datum[''Qtd''] / datum[''QtdAA''] - 1 : 0\",\n      \"as\": \"var\"\n    },\n    {\n      \"calculate\": \"max(min(datum.var, 1), -0.6)\",\n      \"as\": \"vplot\"\n    },\n    {\n      \"calculate\": \"datum[''Qtd''] >= datum[''Media'']\",\n      \"as\": \"grande\"\n    },\n    {\n      \"calculate\": \"datum[''Qtd''] >= (isValid(datum[''QtdAA'']) ? datum[''QtdAA''] : 0)\",\n      \"as\": \"cresce\"\n    },\n    {\n      \"calculate\": \"datum.grande ? (datum.cresce ? ''Fortalezas'' : ''Atenção'') : (datum.cresce ? ''Oportunidades'' : ''Fraquezas'')\",\n      \"as\": \"quad\"\n    }\n  ],\n  \"layer\": [\n    {\n      \"mark\": {\n        \"type\": \"point\",\n        \"filled\": true,\n        \"size\": 54,\n        \"opacity\": 0.85,\n        \"stroke\": \"#1A2026\",\n        \"strokeWidth\": 0.6\n      },\n      \"encoding\": {\n        \"x\": {\n          \"field\": \"Qtd\",\n          \"type\": \"quantitative\",\n          \"scale\": {\n            \"zero\": false,\n            \"nice\": true\n          },\n          \"axis\": {\n            \"title\": \"Baterias no período →\",\n            \"format\": \",.0f\",\n            \"grid\": true,\n            \"gridDash\": [\n              2,\n              3\n            ],\n            \"tickCount\": 5\n          }\n        },\n        \"y\": {\n          \"field\": \"vplot\",\n          \"type\": \"quantitative\",\n          \"scale\": {\n            \"domain\": [\n              -0.6,\n              1\n            ]\n          },\n          \"axis\": {\n            \"title\": \"vs mesmo período AA →\",\n            \"format\": \"+.0%\",\n            \"grid\": true,\n            \"gridDash\": [\n              2,\n              3\n            ],\n            \"values\": [\n              -0.5,\n              -0.25,\n              0,\n              0.25,\n              0.5,\n              0.75,\n              1\n            ]\n          }\n        },\n        \"color\": {\n          \"field\": \"quad\",\n          \"type\": \"nominal\",\n          \"scale\": {\n            \"domain\": [\n              \"Fortalezas\",\n              \"Atenção\",\n              \"Oportunidades\",\n              \"Fraquezas\"\n            ],\n            \"range\": [\n              \"#3FB68B\",\n              \"#F2B84B\",\n              \"#5B8DB8\",\n              \"#E5484D\"\n            ]\n          },\n          \"legend\": null\n        },\n        \"tooltip\": [\n          {\n            \"field\": \"Cliente\"\n          },\n          {\n            \"field\": \"Ramo\"\n          },\n          {\n            \"field\": \"Municipio\",\n            \"title\": \"Município\"\n          },\n          {\n            \"field\": \"quad\",\n            \"title\": \"Quadrante\"\n          },\n          {\n            \"field\": \"Qtd\",\n            \"format\": \",.0f\",\n            \"title\": \"Baterias\"\n          },\n          {\n            \"field\": \"QtdAA\",\n            \"format\": \",.0f\",\n            \"title\": \"Ano anterior\"\n          },\n          {\n            \"field\": \"var\",\n            \"format\": \"+.1%\",\n            \"title\": \"Variação\"\n          }\n        ]\n      }\n    },\n    {\n      \"mark\": {\n        \"type\": \"rule\",\n        \"color\": \"#9AA6B0\",\n        \"strokeDash\": [\n          4,\n          4\n        ],\n        \"opacity\": 0.7\n      },\n      \"encoding\": {\n        \"x\": {\n          \"aggregate\": \"max\",\n          \"field\": \"Media\",\n          \"type\": \"quantitative\"\n        }\n      }\n    },\n    {\n      \"mark\": {\n        \"type\": \"rule\",\n        \"color\": \"#9AA6B0\",\n        \"strokeDash\": [\n          4,\n          4\n        ],\n        \"opacity\": 0.7\n      },\n      \"encoding\": {\n        \"y\": {\n          \"datum\": 0\n        }\n      }\n    },\n    {\n      \"data\": {\n        \"values\": [\n          {}\n        ]\n      },\n      \"mark\": {\n        \"type\": \"text\",\n        \"text\": \"FORTALEZAS\",\n        \"x\": {\n          \"expr\": \"width - 6\"\n        },\n        \"y\": 4,\n        \"align\": \"right\",\n        \"baseline\": \"top\",\n        \"fontSize\": 10,\n        \"fontWeight\": 600,\n        \"color\": \"#3FB68B\",\n        \"opacity\": 0.9\n      }\n    },\n    {\n      \"data\": {\n        \"values\": [\n          {}\n        ]\n      },\n      \"mark\": {\n        \"type\": \"text\",\n        \"text\": \"ATENÇÃO\",\n        \"x\": {\n          \"expr\": \"width - 6\"\n        },\n        \"y\": {\n          \"expr\": \"height - 6\"\n        },\n        \"align\": \"right\",\n        \"baseline\": \"bottom\",\n        \"fontSize\": 10,\n        \"fontWeight\": 600,\n        \"color\": \"#F2B84B\",\n        \"opacity\": 0.9\n      }\n    },\n    {\n      \"data\": {\n        \"values\": [\n          {}\n        ]\n      },\n      \"mark\": {\n        \"type\": \"text\",\n        \"text\": \"OPORTUNIDADES\",\n        \"x\": 6,\n        \"y\": 4,\n        \"align\": \"left\",\n        \"baseline\": \"top\",\n        \"fontSize\": 10,\n        \"fontWeight\": 600,\n        \"color\": \"#5B8DB8\",\n        \"opacity\": 0.9\n      }\n    },\n    {\n      \"data\": {\n        \"values\": [\n          {}\n        ]\n      },\n      \"mark\": {\n        \"type\": \"text\",\n        \"text\": \"FRAQUEZAS\",\n        \"x\": 6,\n        \"y\": {\n          \"expr\": \"height - 6\"\n        },\n        \"align\": \"left\",\n        \"baseline\": \"bottom\",\n        \"fontSize\": 10,\n        \"fontWeight\": 600,\n        \"color\": \"#E5484D\",\n        \"opacity\": 0.9\n      }\n    }\n  ]\n}'"
+                }
+              }
+            },
+            "jsonConfig": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{}'"
+                }
+              }
+            },
+            "provider": {
+              "expr": {
+                "Literal": {
+                  "Value": "'vegaLite'"
+                }
+              }
+            },
+            "renderMode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'svg'"
+                }
+              }
+            },
+            "enableTooltips": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "enableContextMenu": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "enableSelection": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "version": {
+              "expr": {
+                "Literal": {
+                  "Value": "'6.4.3'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "developer": [
+        {
+          "properties": {
+            "locale": {
+              "expr": {
+                "Literal": {
+                  "Value": "'pt-BR'"
+                }
+              }
+            },
+            "version": {
+              "expr": {
+                "Literal": {
+                  "Value": "'2.0.0.0'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "stateManagement": [
+        {
+          "properties": {
+            "viewportHeight": {
+              "expr": {
+                "Literal": {
+                  "Value": "416D"
+                }
+              }
+            },
+            "viewportWidth": {
+              "expr": {
+                "Literal": {
+                  "Value": "700D"
+                }
+              }
+            },
+            "supportFieldConfiguration": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"Cliente\": {\"highlight\": false, \"highlightStatus\": false, \"highlightComparator\": false, \"format\": false, \"formatted\": false, \"names\": false}, \"Ramo\": {\"highlight\": false, \"highlightStatus\": false, \"highlightComparator\": false, \"format\": false, \"formatted\": false, \"names\": false}, \"Municipio\": {\"highlight\": false, \"highlightStatus\": false, \"highlightComparator\": false, \"format\": false, \"formatted\": false, \"names\": false}, \"Qtd\": {\"highlight\": false, \"highlightStatus\": false, \"highlightComparator\": false, \"format\": true, \"formatted\": true, \"names\": false}, \"QtdAA\": {\"highlight\": false, \"highlightStatus\": false, \"highlightComparator\": false, \"format\": true, \"formatted\": true, \"names\": false}, \"Media\": {\"highlight\": false, \"highlightStatus\": false, \"highlightComparator\": false, \"format\": true, \"formatted\": true, \"names\": false}}'"
+                }
+              }
+            },
+            "denebMetaVersion": {
+              "expr": {
+                "Literal": {
+                  "Value": "'2'"
+                }
+              }
+            },
+            "consolidateFieldParameters": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "dropShadow": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "padding": [
+        {
+          "properties": {
+            "top": {
+              "expr": {
+                "Literal": {
+                  "Value": "4D"
+                }
+              }
+            },
+            "bottom": {
+              "expr": {
+                "Literal": {
+                  "Value": "4D"
+                }
+              }
+            },
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "6D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "6D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

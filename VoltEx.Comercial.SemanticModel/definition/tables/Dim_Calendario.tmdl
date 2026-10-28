@@ -1,0 +1,114 @@
+table Dim_Calendario
+	lineageTag: 695c9aff-b36e-5721-a1dd-245d7ec8ceb7
+	dataCategory: Time
+
+	column Data
+		dataType: dateTime
+		isKey
+		formatString: dd/mm/yyyy
+		lineageTag: fc2dc7e3-1296-58aa-8c90-9bdd389825bf
+		summarizeBy: none
+		sourceColumn: Data
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Ano
+		dataType: int64
+		formatString: 0
+		lineageTag: 05f4c806-6f81-5b79-9982-df4f3497ea70
+		summarizeBy: none
+		sourceColumn: Ano
+
+		annotation SummarizationSetBy = Automatic
+
+	column Mes_Num
+		dataType: int64
+		isHidden
+		lineageTag: 8c12bbcb-ad9c-5c31-a399-c7e60b6f2dd8
+		summarizeBy: none
+		sourceColumn: Mes_Num
+
+		annotation SummarizationSetBy = Automatic
+
+	column Mes
+		dataType: string
+		lineageTag: f315520f-c90c-5c69-bad8-1bbddabb9266
+		summarizeBy: none
+		sourceColumn: Mes
+		sortByColumn: Mes_Num
+
+		annotation SummarizationSetBy = Automatic
+
+	column AnoMes
+		dataType: int64
+		isHidden
+		lineageTag: 68d9246c-3d08-5d82-98e1-0a0aa222bea1
+		summarizeBy: none
+		sourceColumn: AnoMes
+
+		annotation SummarizationSetBy = Automatic
+
+	column Ano_Mes
+		dataType: string
+		lineageTag: 99c46b7a-7ead-5ea8-9837-4f9172313c3c
+		summarizeBy: none
+		sourceColumn: Ano_Mes
+		sortByColumn: AnoMes
+
+		annotation SummarizationSetBy = Automatic
+
+	column Inicio_Mes
+		dataType: dateTime
+		formatString: mmm/yy
+		lineageTag: 332e0a22-50d2-580b-b148-086b31f58377
+		summarizeBy: none
+		sourceColumn: Inicio_Mes
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Trimestre
+		dataType: string
+		lineageTag: 58a3f4f6-a4c9-5dcb-a3ae-4a86bba4831d
+		summarizeBy: none
+		sourceColumn: Trimestre
+
+		annotation SummarizationSetBy = Automatic
+
+	column Status_Mes
+		dataType: string
+		lineageTag: eb747b82-d316-556b-abbb-5958f3c8f2d0
+		summarizeBy: none
+		sourceColumn: Status_Mes
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Dim_Calendario = m
+		mode: import
+		source =
+				let
+				    // Termina na data de corte: a base traz vendas com data futura (até 31/12/2026)
+				    // e o ano corrente vira YTD automaticamente, o que alinha o SAMEPERIODLASTYEAR.
+				    DataMin = #date ( 2025, 1, 1 ),
+				    DataMax = DataCorte,
+				    Lista = List.Dates ( DataMin, Duration.Days ( DataMax - DataMin ) + 1, #duration ( 1, 0, 0, 0 ) ),
+				    Tabela = Table.FromList ( Lista, Splitter.SplitByNothing (), {"Data"} ),
+				    Tipada = Table.TransformColumnTypes ( Tabela, {{"Data", type date}} ),
+				    Ano = Table.AddColumn ( Tipada, "Ano", each Date.Year ( [Data] ), Int64.Type ),
+				    MesNum = Table.AddColumn ( Ano, "Mes_Num", each Date.Month ( [Data] ), Int64.Type ),
+				    Mes = Table.AddColumn ( MesNum, "Mes", each Text.Proper ( Date.ToText ( [Data], "MMM", "pt-BR" ) ), type text ),
+				    AnoMes = Table.AddColumn ( Mes, "AnoMes", each [Ano] * 100 + [Mes_Num], Int64.Type ),
+				    AnoMesTxt = Table.AddColumn ( AnoMes, "Ano_Mes", each Date.ToText ( [Data], "MMM/yy", "pt-BR" ), type text ),
+				    MesIni = Table.AddColumn ( AnoMesTxt, "Inicio_Mes", each Date.StartOfMonth ( [Data] ), type date ),
+				    Trim = Table.AddColumn ( MesIni, "Trimestre", each "T" & Text.From ( Date.QuarterOfYear ( [Data] ) ), type text ),
+				    Resultado = Table.AddColumn ( Trim, "Status_Mes", each
+				        if [Inicio_Mes] = Date.StartOfMonth ( DataCorte ) and DataCorte < Date.EndOfMonth ( DataCorte )
+				        then "Parcial" else "Fechado", type text )
+				in
+				    Resultado
+
+	annotation PBI_ResultType = Table
+

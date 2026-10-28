@@ -1,0 +1,191 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 1347.5167374542257,
+            "y": 578.32625169603466
+          },
+          "nodeIndex": "_Medidas",
+          "nodeLineageTag": "74908720-150d-552d-acf6-07d07e29c566",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 339.91015440506442,
+            "y": 1.5524034232801114
+          },
+          "nodeIndex": "Dim_Calendario",
+          "nodeLineageTag": "695c9aff-b36e-5721-a1dd-245d7ec8ceb7",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 824.05246052446091,
+            "y": 673.56228922369246
+          },
+          "nodeIndex": "Dim_Cliente",
+          "nodeLineageTag": "d75bd233-a34e-575e-ab4e-c26b8270d537",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 259.4622951520509,
+            "y": 725.43433599701189
+          },
+          "nodeIndex": "Dim_Filial",
+          "nodeLineageTag": "f8fae008-d437-56ca-9fac-ed06708235bc",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 534.17085613459653,
+            "y": 953.61826545405381
+          },
+          "nodeIndex": "Dim_Municipio",
+          "nodeLineageTag": "4ddf1235-5188-589b-be29-1fc92d662dc0",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 827.31187994414131,
+            "y": 73.018314088810484
+          },
+          "nodeIndex": "Dim_Produto",
+          "nodeLineageTag": "8959d399-51a8-5d91-8b6c-c6f6ec12ad1d",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 50.072133516438669,
+            "y": 320.5196480227263
+          },
+          "nodeIndex": "Dim_Vendedor",
+          "nodeLineageTag": "e2e55716-57e7-5e2b-bbf6-412f0daa0b75",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 50,
+            "y": -50
+          },
+          "nodeIndex": "Fato_Metas",
+          "nodeLineageTag": "aaeda58f-9365-582c-b980-fe9a4ea06132",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 452.88958590442559,
+            "y": 1182.6525033920693
+          },
+          "nodeIndex": "Fato_Prospects",
+          "nodeLineageTag": "82a39967-8ed8-51cd-87c0-39e43aa1659e",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1113.5167374542257,
+            "y": 453.87427184633475
+          },
+          "nodeIndex": "Fato_Sucata",
+          "nodeLineageTag": "94335021-2bf5-5237-a4d1-6d9473d3b1ee",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 537.42320921676173,
+            "y": 354.79630748751242
+          },
+          "nodeIndex": "Fato_Vendas",
+          "nodeLineageTag": "df8da85f-4294-57b9-bf29-b4fb3a23b673",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1631.5167374542257,
+            "y": 652.32625169603466
+          },
+          "nodeIndex": "Seg_RFQ",
+          "nodeLineageTag": "523d4363-56dd-5249-9dbb-9b1523a3f3e5",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1915.5167374542257,
+            "y": 664.32625169603466
+          },
+          "nodeIndex": "Seg_SWOT",
+          "nodeLineageTag": "78e9290b-6110-5e8c-a6e9-1abcfc8e4d54",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "Todas as tabelas",
+      "zoomValue": 100,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "Todas as tabelas",
+  "defaultDiagram": "Todas as tabelas"
+}

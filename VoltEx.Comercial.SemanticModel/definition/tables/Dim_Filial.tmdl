@@ -1,0 +1,56 @@
+table Dim_Filial
+	lineageTag: f8fae008-d437-56ca-9fac-ed06708235bc
+
+	column ID_Filial
+		dataType: int64
+		isHidden
+		lineageTag: 6343716c-5381-5f2e-970a-c6d3f3f32da9
+		summarizeBy: none
+		sourceColumn: ID_Filial
+
+		annotation SummarizationSetBy = Automatic
+
+	column Nome_Filial
+		dataType: string
+		lineageTag: b5bded62-55e1-588f-92ad-dcd3ae722519
+		summarizeBy: none
+		sourceColumn: Nome_Filial
+
+		annotation SummarizationSetBy = Automatic
+
+	column Filial_Curta
+		dataType: string
+		lineageTag: 26626eac-9009-51d0-a3a7-c42e40ef97b1
+		summarizeBy: none
+		sourceColumn: Filial_Curta
+		sortByColumn: ID_Filial
+
+		annotation SummarizationSetBy = Automatic
+
+	column UF_Filial
+		dataType: string
+		lineageTag: e0dbc536-e286-55a5-b178-54c59a16259d
+		summarizeBy: none
+		sourceColumn: UF_Filial
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Dim_Filial = m
+		mode: import
+		source =
+				let
+				    Fonte = Excel.Workbook ( File.Contents ( CaminhoBaseCom ), null, true ),
+				    Planilha = Fonte{[Item = "Dim_Filial", Kind = "Sheet"]}[Data],
+				    Cabecalho = Table.PromoteHeaders ( Planilha, [PromoteAllScalars = true] ),
+				    Tipos = Table.TransformColumnTypes ( Cabecalho, {
+				        {"ID_Filial", Int64.Type},
+				        {"Nome_Filial", type text}
+				    } ),
+				    // "Matriz - SP" -> "Matriz · SP"
+				    Curta = Table.AddColumn ( Tipos, "Filial_Curta", each Text.Replace ( [Nome_Filial], " - ", " · " ), type text ),
+				    Resultado = Table.AddColumn ( Curta, "UF_Filial", each Text.End ( Text.Trim ( [Nome_Filial] ), 2 ), type text )
+				in
+				    Resultado
+
+	annotation PBI_ResultType = Table
+

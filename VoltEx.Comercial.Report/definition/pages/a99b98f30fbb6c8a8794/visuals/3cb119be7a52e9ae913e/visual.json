@@ -1,0 +1,138 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
+  "name": "3cb119be7a52e9ae913e",
+  "position": {
+    "x": 0,
+    "y": 412,
+    "z": 1060,
+    "height": 60,
+    "width": 72,
+    "tabOrder": 1060
+  },
+  "visual": {
+    "visualType": "image",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "imageUrl": {
+              "expr": {
+                "Literal": {
+                  "Value": "'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MiIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDcyIDYwIj48cmVjdCB4PSI2IiB5PSIyIiB3aWR0aD0iNjAiIGhlaWdodD0iNTYiIHJ4PSIxMCIgZmlsbD0iI0ZGOEMwMCIgZmlsbC1vcGFjaXR5PSIwLjEwIi8+PHJlY3QgeD0iMCIgeT0iMTQiIHdpZHRoPSIzIiBoZWlnaHQ9IjMyIiByeD0iMS41IiBmaWxsPSIjRkY4QzAwIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjQgOCkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0ZGOEMwMCIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHJlY3QgeD0iMyIgeT0iOCIgd2lkdGg9IjE2IiBoZWlnaHQ9IjExIiByeD0iMS41Ii8+PHBhdGggZD0iTTE5IDExLjVoMnY0aC0yTTcgNS41djIuNU0xNSA1LjV2Mi41TTcuNSAxMy41aDNNMTMgMTMuNWgzTTE0LjUgMTJ2MyIvPjwvZz48dGV4dCB4PSIzNiIgeT0iNDkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJTZWdvZSBVSSwgQXJpYWwiIGZvbnQtc2l6ZT0iMTAiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGMkY0RjUiPk1peDwvdGV4dD48L3N2Zz4='"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "imageScaling": [
+        {
+          "properties": {
+            "imageScalingType": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Fit'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "dropShadow": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualLink": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "type": {
+              "expr": {
+                "Literal": {
+                  "Value": "'PageNavigation'"
+                }
+              }
+            },
+            "navigationSection": {
+              "expr": {
+                "Literal": {
+                  "Value": "'a99b98f30fbb6c8a8794'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

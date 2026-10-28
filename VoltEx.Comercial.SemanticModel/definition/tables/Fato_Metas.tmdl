@@ -1,0 +1,55 @@
+table Fato_Metas
+	lineageTag: aaeda58f-9365-582c-b980-fe9a4ea06132
+
+	column Data_Mes
+		dataType: dateTime
+		isHidden
+		formatString: mmm/yy
+		lineageTag: 5e086246-3417-597e-9148-479235519a00
+		summarizeBy: none
+		sourceColumn: Data_Mes
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ID_Vendedor
+		dataType: int64
+		isHidden
+		lineageTag: ae8ac44f-ed2d-5c1b-877b-679ea7b5ef2d
+		summarizeBy: none
+		sourceColumn: ID_Vendedor
+
+		annotation SummarizationSetBy = Automatic
+
+	column Meta_Quantidade
+		dataType: int64
+		isHidden
+		formatString: #,0
+		lineageTag: 9ba87163-dbbe-5642-8021-db4d5ed343ef
+		summarizeBy: none
+		sourceColumn: Meta_Quantidade
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Fato_Metas = m
+		mode: import
+		source =
+				let
+				    Fonte = Excel.Workbook ( File.Contents ( CaminhoBaseCom ), null, true ),
+				    Planilha = Fonte{[Item = "Fato_Metas", Kind = "Sheet"]}[Data],
+				    Cabecalho = Table.PromoteHeaders ( Planilha, [PromoteAllScalars = true] ),
+				    Tipos = Table.TransformColumnTypes ( Cabecalho, {
+				        {"Data_Mes", type date},
+				        {"ID_Vendedor", Int64.Type},
+				        {"Meta_Quantidade", Int64.Type}
+				    } ),
+				    // Metas valem para a Linha Leve (40–72Ah). A coluna de marca da origem é descartada.
+				    // Metas de meses ainda não iniciados ficam fora (não há calendário para elas)
+				    SemMarca = Table.RemoveColumns ( Tipos, { "Marca_Meta", "Familia_Meta" }, MissingField.Ignore ),
+				    Resultado = Table.SelectRows ( SemMarca, each [Data_Mes] <= DataCorte )
+				in
+				    Resultado
+
+	annotation PBI_ResultType = Table
+

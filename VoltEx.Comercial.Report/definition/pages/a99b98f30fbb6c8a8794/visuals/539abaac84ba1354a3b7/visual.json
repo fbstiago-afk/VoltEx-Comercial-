@@ -1,0 +1,340 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "539abaac84ba1354a3b7",
+  "position": {
+    "x": 96,
+    "y": 180,
+    "z": 1110,
+    "height": 424,
+    "width": 712,
+    "tabOrder": 1110
+  },
+  "visual": {
+    "visualType": "deneb7E15AEF80B9E4D4F8E12924291ECE89A",
+    "query": {
+      "queryState": {
+        "dataset": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Produto"
+                    }
+                  },
+                  "Property": "Nome_Curto"
+                }
+              },
+              "queryRef": "Dim_Produto.Nome_Curto",
+              "nativeQueryRef": "Nome_Curto",
+              "displayName": "Produto"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Produto"
+                    }
+                  },
+                  "Property": "Linha"
+                }
+              },
+              "queryRef": "Dim_Produto.Linha",
+              "nativeQueryRef": "Linha",
+              "displayName": "Linha"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Produto"
+                    }
+                  },
+                  "Property": "Familia"
+                }
+              },
+              "queryRef": "Dim_Produto.Familia",
+              "nativeQueryRef": "Familia",
+              "displayName": "Familia"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Catalogo"
+                    }
+                  },
+                  "Property": "Produto_Oficial"
+                }
+              },
+              "queryRef": "Dim_Catalogo.Produto_Oficial",
+              "nativeQueryRef": "Produto_Oficial",
+              "displayName": "Oficial"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "% Qtd s/ Total Produto"
+                }
+              },
+              "queryRef": "_Medidas.% Qtd s/ Total Produto",
+              "nativeQueryRef": "% Qtd s/ Total Produto",
+              "displayName": "Volume"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "% Fat s/ Total Produto"
+                }
+              },
+              "queryRef": "_Medidas.% Fat s/ Total Produto",
+              "nativeQueryRef": "% Fat s/ Total Produto",
+              "displayName": "Faturamento"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "vega": [
+        {
+          "properties": {
+            "jsonSpec": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\n  \"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\",\n  \"data\": {\n    \"name\": \"dataset\"\n  },\n  \"config\": {\n    \"background\": \"transparent\",\n    \"view\": {\n      \"stroke\": null\n    },\n    \"font\": \"Segoe UI\",\n    \"axis\": {\n      \"labelColor\": \"#9AA6B0\",\n      \"labelFont\": \"Segoe UI\",\n      \"labelFontSize\": 10,\n      \"titleColor\": \"#9AA6B0\",\n      \"titleFont\": \"Segoe UI\",\n      \"titleFontWeight\": \"normal\",\n      \"titleFontSize\": 10,\n      \"domain\": false,\n      \"ticks\": false,\n      \"gridColor\": \"#2C363E\"\n    },\n    \"legend\": {\n      \"labelColor\": \"#9AA6B0\",\n      \"titleColor\": \"#9AA6B0\",\n      \"labelFont\": \"Segoe UI\"\n    },\n    \"title\": {\n      \"color\": \"#C9D3DB\",\n      \"font\": \"Segoe UI Semibold\",\n      \"fontSize\": 12,\n      \"fontWeight\": \"normal\",\n      \"anchor\": \"start\",\n      \"offset\": 12\n    },\n    \"locale\": {\n      \"number\": {\n        \"decimal\": \",\",\n        \"thousands\": \".\",\n        \"grouping\": [\n          3\n        ],\n        \"currency\": [\n          \"R$ \",\n          \"\"\n        ]\n      },\n      \"time\": {\n        \"dateTime\": \"%A, %e de %B de %Y. %X\",\n        \"date\": \"%d/%m/%Y\",\n        \"time\": \"%H:%M:%S\",\n        \"periods\": [\n          \"AM\",\n          \"PM\"\n        ],\n        \"days\": [\n          \"Domingo\",\n          \"Segunda\",\n          \"Terça\",\n          \"Quarta\",\n          \"Quinta\",\n          \"Sexta\",\n          \"Sábado\"\n        ],\n        \"shortDays\": [\n          \"Dom\",\n          \"Seg\",\n          \"Ter\",\n          \"Qua\",\n          \"Qui\",\n          \"Sex\",\n          \"Sáb\"\n        ],\n        \"months\": [\n          \"Janeiro\",\n          \"Fevereiro\",\n          \"Março\",\n          \"Abril\",\n          \"Maio\",\n          \"Junho\",\n          \"Julho\",\n          \"Agosto\",\n          \"Setembro\",\n          \"Outubro\",\n          \"Novembro\",\n          \"Dezembro\"\n        ],\n        \"shortMonths\": [\n          \"Jan\",\n          \"Fev\",\n          \"Mar\",\n          \"Abr\",\n          \"Mai\",\n          \"Jun\",\n          \"Jul\",\n          \"Ago\",\n          \"Set\",\n          \"Out\",\n          \"Nov\",\n          \"Dez\"\n        ]\n      }\n    }\n  },\n  \"title\": {\n    \"text\": \"Peso no volume × peso no faturamento, por produto\"\n  },\n  \"width\": \"container\",\n  \"height\": \"container\",\n  \"transform\": [\n    {\n      \"fold\": [\n        \"Volume\",\n        \"Faturamento\"\n      ],\n      \"as\": [\n        \"medida\",\n        \"valor\"\n      ]\n    }\n  ],\n  \"encoding\": {\n    \"y\": {\n      \"field\": \"Produto\",\n      \"type\": \"nominal\",\n      \"sort\": null,\n      \"axis\": {\n        \"title\": null,\n        \"labelColor\": \"#F2F4F5\",\n        \"labelFontSize\": 12,\n        \"labelPadding\": 12\n      }\n    }\n  },\n  \"layer\": [\n    {\n      \"mark\": {\n        \"type\": \"rule\",\n        \"color\": \"#4A5862\",\n        \"strokeWidth\": 3\n      },\n      \"encoding\": {\n        \"x\": {\n          \"aggregate\": \"min\",\n          \"field\": \"valor\",\n          \"type\": \"quantitative\"\n        },\n        \"x2\": {\n          \"aggregate\": \"max\",\n          \"field\": \"valor\"\n        }\n      }\n    },\n    {\n      \"mark\": {\n        \"type\": \"circle\",\n        \"size\": 200,\n        \"opacity\": 1,\n        \"stroke\": \"#1A2026\",\n        \"strokeWidth\": 2\n      },\n      \"encoding\": {\n        \"x\": {\n          \"field\": \"valor\",\n          \"type\": \"quantitative\",\n          \"axis\": {\n            \"format\": \".0%\",\n            \"title\": null,\n            \"grid\": true,\n            \"gridDash\": [\n              2,\n              3\n            ],\n            \"tickCount\": 5\n          }\n        },\n        \"color\": {\n          \"field\": \"medida\",\n          \"type\": \"nominal\",\n          \"scale\": {\n            \"domain\": [\n              \"Volume\",\n              \"Faturamento\"\n            ],\n            \"range\": [\n              \"#8A98A4\",\n              \"#FF8C00\"\n            ]\n          },\n          \"legend\": {\n            \"orient\": \"top\",\n            \"title\": null,\n            \"direction\": \"horizontal\",\n            \"symbolType\": \"circle\"\n          }\n        },\n        \"tooltip\": [\n          {\n            \"field\": \"Produto\"\n          },\n          {\n            \"field\": \"Linha\"\n          },\n          {\n            \"field\": \"Familia\",\n            \"title\": \"Família\"\n          },\n          {\n            \"field\": \"Oficial\",\n            \"title\": \"Produto oficial\"\n          },\n          {\n            \"field\": \"medida\",\n            \"title\": \"Medida\"\n          },\n          {\n            \"field\": \"valor\",\n            \"format\": \".1%\",\n            \"title\": \"% do total\"\n          }\n        ]\n      }\n    },\n    {\n      \"mark\": {\n        \"type\": \"text\",\n        \"dy\": -14,\n        \"fontSize\": 10\n      },\n      \"encoding\": {\n        \"x\": {\n          \"field\": \"valor\",\n          \"type\": \"quantitative\"\n        },\n        \"text\": {\n          \"field\": \"valor\",\n          \"format\": \".0%\"\n        },\n        \"color\": {\n          \"field\": \"medida\",\n          \"type\": \"nominal\",\n          \"scale\": {\n            \"domain\": [\n              \"Volume\",\n              \"Faturamento\"\n            ],\n            \"range\": [\n              \"#9AA6B0\",\n              \"#FFB45C\"\n            ]\n          },\n          \"legend\": null\n        }\n      }\n    }\n  ],\n  \"resolve\": {\n    \"scale\": {\n      \"color\": \"independent\"\n    }\n  }\n}'"
+                }
+              }
+            },
+            "jsonConfig": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{}'"
+                }
+              }
+            },
+            "provider": {
+              "expr": {
+                "Literal": {
+                  "Value": "'vegaLite'"
+                }
+              }
+            },
+            "renderMode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'svg'"
+                }
+              }
+            },
+            "enableTooltips": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "enableContextMenu": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "enableSelection": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "version": {
+              "expr": {
+                "Literal": {
+                  "Value": "'6.4.3'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "developer": [
+        {
+          "properties": {
+            "locale": {
+              "expr": {
+                "Literal": {
+                  "Value": "'pt-BR'"
+                }
+              }
+            },
+            "version": {
+              "expr": {
+                "Literal": {
+                  "Value": "'2.0.0.0'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "stateManagement": [
+        {
+          "properties": {
+            "viewportHeight": {
+              "expr": {
+                "Literal": {
+                  "Value": "416D"
+                }
+              }
+            },
+            "viewportWidth": {
+              "expr": {
+                "Literal": {
+                  "Value": "700D"
+                }
+              }
+            },
+            "supportFieldConfiguration": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"Produto\": {\"highlight\": false, \"highlightStatus\": false, \"highlightComparator\": false, \"format\": false, \"formatted\": false, \"names\": false}, \"Linha\": {\"highlight\": false, \"highlightStatus\": false, \"highlightComparator\": false, \"format\": false, \"formatted\": false, \"names\": false}, \"Familia\": {\"highlight\": false, \"highlightStatus\": false, \"highlightComparator\": false, \"format\": false, \"formatted\": false, \"names\": false}, \"Oficial\": {\"highlight\": false, \"highlightStatus\": false, \"highlightComparator\": false, \"format\": false, \"formatted\": false, \"names\": false}, \"Volume\": {\"highlight\": false, \"highlightStatus\": false, \"highlightComparator\": false, \"format\": true, \"formatted\": true, \"names\": false}, \"Faturamento\": {\"highlight\": false, \"highlightStatus\": false, \"highlightComparator\": false, \"format\": true, \"formatted\": true, \"names\": false}}'"
+                }
+              }
+            },
+            "denebMetaVersion": {
+              "expr": {
+                "Literal": {
+                  "Value": "'2'"
+                }
+              }
+            },
+            "consolidateFieldParameters": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "dropShadow": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "padding": [
+        {
+          "properties": {
+            "top": {
+              "expr": {
+                "Literal": {
+                  "Value": "4D"
+                }
+              }
+            },
+            "bottom": {
+              "expr": {
+                "Literal": {
+                  "Value": "4D"
+                }
+              }
+            },
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "6D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "6D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

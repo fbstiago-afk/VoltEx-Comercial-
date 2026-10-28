@@ -1,0 +1,67 @@
+table Dim_Vendedor
+	lineageTag: e2e55716-57e7-5e2b-bbf6-412f0daa0b75
+
+	column ID_Vendedor
+		dataType: int64
+		isHidden
+		lineageTag: 0a2ae998-bda5-55fe-bc0e-1a4f852952ae
+		summarizeBy: none
+		sourceColumn: ID_Vendedor
+
+		annotation SummarizationSetBy = Automatic
+
+	column Nome_Vendedor
+		dataType: string
+		lineageTag: 0d77f42f-bd6e-5857-b082-e026dc3e8693
+		summarizeBy: none
+		sourceColumn: Nome_Vendedor
+		sortByColumn: ID_Vendedor
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_Filial
+		dataType: int64
+		isHidden
+		lineageTag: 1fe5c147-f01f-541f-bce1-f1574de321d8
+		summarizeBy: none
+		sourceColumn: ID_Filial
+
+		annotation SummarizationSetBy = Automatic
+
+	column Area_Rota
+		dataType: string
+		lineageTag: b7366f6f-1f1d-5ced-9cf2-70065639806e
+		summarizeBy: none
+		sourceColumn: Area_Rota
+
+		annotation SummarizationSetBy = Automatic
+
+	column Filial_Vendedor
+		dataType: string
+		lineageTag: e321027d-4ff7-519e-8cd3-f2e4fab72dff
+		summarizeBy: none
+		sourceColumn: Filial_Vendedor
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Dim_Vendedor = m
+		mode: import
+		source =
+				let
+				    Fonte = Excel.Workbook ( File.Contents ( CaminhoBaseCom ), null, true ),
+				    Planilha = Fonte{[Item = "Dim_Vendedor", Kind = "Sheet"]}[Data],
+				    Cabecalho = Table.PromoteHeaders ( Planilha, [PromoteAllScalars = true] ),
+				    Tipos = Table.TransformColumnTypes ( Cabecalho, {
+				        {"ID_Vendedor", Int64.Type},
+				        {"Nome_Vendedor", type text},
+				        {"ID_Filial", Int64.Type},
+				        {"Area_Rota", type text}
+				    } ),
+				    // Rótulo da filial como atributo; o vínculo vendedor -> filial nas medidas é por TREATAS
+				    Filial = Table.AddColumn ( Tipos, "Filial_Vendedor", each if [ID_Filial] = 1 then "Matriz · SP" else "Filial · RJ", type text ),
+				    Resultado = Filial
+				in
+				    Resultado
+
+	annotation PBI_ResultType = Table
+

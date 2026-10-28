@@ -1,0 +1,17 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
+  "name": "3d821d90b226dc1d9c82",
+  "position": {
+    "x": 0,
+    "y": 0,
+    "z": 30000,
+    "height": 720,
+    "width": 1280,
+    "tabOrder": 30000
+  },
+  "visualGroup": {
+    "displayName": "GRP_Drawer",
+    "groupMode": "ScaleMode"
+  },
+  "isHidden": true
+}

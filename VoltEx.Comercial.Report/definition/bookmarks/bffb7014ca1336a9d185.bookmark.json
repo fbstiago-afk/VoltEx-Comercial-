@@ -1,0 +1,51 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/bookmark/2.1.0/schema.json",
+  "displayName": "swot · Filtros abertos",
+  "name": "bffb7014ca1336a9d185",
+  "options": {
+    "applyOnlyToTargetVisuals": true,
+    "targetVisualNames": [
+      "83bd42a1ea86dd724477",
+      "abb13c4f28465029af35",
+      "e05aa0ea8b3877db5884",
+      "0c4bc01d46675844636a",
+      "e046dc8283a8651d416c",
+      "f092d21eae8e65b79008",
+      "7a41d3ed6cca0aaf06d4",
+      "1defb0a3998305177ae5",
+      "fd9bead6efb2dcc0fa62",
+      "5215f7b4cbb355fb3566",
+      "b17f0c49f5ae65232ddc",
+      "6797f6f88f01a0a24110",
+      "b07e7e51f45dd501559d"
+    ],
+    "suppressData": true
+  },
+  "explorationState": {
+    "version": "1.0",
+    "activeSection": "d66838666dfb9b61a406",
+    "sections": {
+      "d66838666dfb9b61a406": {
+        "visualContainers": {
+          "abb13c4f28465029af35": {},
+          "e05aa0ea8b3877db5884": {},
+          "0c4bc01d46675844636a": {},
+          "e046dc8283a8651d416c": {},
+          "f092d21eae8e65b79008": {},
+          "7a41d3ed6cca0aaf06d4": {},
+          "1defb0a3998305177ae5": {},
+          "fd9bead6efb2dcc0fa62": {},
+          "5215f7b4cbb355fb3566": {},
+          "b17f0c49f5ae65232ddc": {},
+          "6797f6f88f01a0a24110": {},
+          "b07e7e51f45dd501559d": {}
+        },
+        "visualContainerGroups": {
+          "83bd42a1ea86dd724477": {
+            "isHidden": false
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+/// Caminho completo do Excel comercial. Altere em Transformar dados › Gerenciar parâmetros.
+expression CaminhoBaseCom = "E:\Projetos BI\14 - Voltex baterias\Base_VoltEx_Comercial.xlsx" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+	lineageTag: 7d9f97b7-61c1-5a2f-82e4-835bc4badac4
+
+	annotation PBI_ResultType = Text
+
+/// Data de corte: hoje. Corta vendas, metas e sucata com data futura e fecha o calendário.
+/// Para congelar um fechamento, troque por #date ( 2026, 9, 30 ), por exemplo.
+expression DataCorte =
+		let
+		    Resultado = Date.From ( DateTime.LocalNow () )
+		in
+		    Resultado
+	lineageTag: 0e6acbfb-223d-58e2-83ae-063961f5dbec
+
+	annotation PBI_ResultType = Date
+
+/// Base da fábrica: usada só para o catálogo oficial de produtos (Dim_Catalogo).
+expression CaminhoBaseFab = "E:\Projetos BI\14 - Voltex baterias\Base_VoltEx_Dashboard_Completo.xlsx" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+	lineageTag: e65cf349-bdc6-5fdf-a0f2-5263073ad8e0
+
+	annotation PBI_ResultType = Text
+

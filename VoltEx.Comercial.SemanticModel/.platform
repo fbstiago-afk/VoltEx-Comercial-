@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "VoltEx.Comercial"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "2624ac50-d906-5f01-b3cd-d6901a14860d"
+  }
+}

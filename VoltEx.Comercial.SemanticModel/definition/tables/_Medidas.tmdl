@@ -1,0 +1,1485 @@
+table _Medidas
+	lineageTag: 74908720-150d-552d-acf6-07d07e29c566
+
+	measure Quantidade =
+			-- Regra do comercial: venda + bonificação. Troca em garantia fica fora.
+			CALCULATE (
+			    SUM ( Fato_Vendas[Quantidade] ),
+			    KEEPFILTERS ( Fato_Vendas[Tipo_Operacao] IN { "Venda", "Bonificacao" } )
+			)
+		formatString: #,0
+		displayFolder: 01 Vendas
+		lineageTag: 9a6f15e1-97e3-59ed-947f-53badab0cf47
+
+	measure 'Qtd Venda' = CALCULATE ( SUM ( Fato_Vendas[Quantidade] ), KEEPFILTERS ( Fato_Vendas[Tipo_Operacao] = "Venda" ) )
+		formatString: #,0
+		displayFolder: 01 Vendas
+		lineageTag: 1e418fef-eb91-5e65-a1c4-ac692bbfb597
+
+	measure 'Qtd Bonificação' = CALCULATE ( SUM ( Fato_Vendas[Quantidade] ), KEEPFILTERS ( Fato_Vendas[Tipo_Operacao] = "Bonificacao" ) )
+		formatString: #,0
+		displayFolder: 01 Vendas
+		lineageTag: fac3f62b-9e67-5309-a682-19d47a2036b1
+
+	measure 'Qtd Troca Garantia' = CALCULATE ( SUM ( Fato_Vendas[Quantidade] ), KEEPFILTERS ( Fato_Vendas[Tipo_Operacao] = "Troca Garantia" ) )
+		formatString: #,0
+		displayFolder: 01 Vendas
+		lineageTag: 3f766d22-b0cd-5edd-955a-4b73af442481
+
+	measure '% Garantia s/ Venda' = DIVIDE ( [Qtd Troca Garantia], [Qtd Venda] )
+		formatString: 0.00%
+		displayFolder: 01 Vendas
+		lineageTag: b6400c37-3d57-5671-898c-feffb928cd55
+
+	measure Faturamento =
+			-- Bonificação e troca em garantia já vêm com faturamento zero da origem
+			SUM ( Fato_Vendas[Faturamento_RS] )
+		formatString: R$ #,0
+		displayFolder: 01 Vendas
+		lineageTag: b3f9b1fc-c79f-5cdf-a07c-86cba232e6b2
+
+	measure 'Preço Médio' = DIVIDE ( [Faturamento], [Qtd Venda] )
+		formatString: R$ #,0.00
+		displayFolder: 01 Vendas
+		lineageTag: 193dc664-f330-5fb8-89b7-35c681596729
+
+	measure 'Itens de Nota' = CALCULATE ( COUNTROWS ( Fato_Vendas ), KEEPFILTERS ( Fato_Vendas[Tipo_Operacao] = "Venda" ) )
+		formatString: #,0
+		displayFolder: 01 Vendas
+		lineageTag: 7a5ca50c-068c-5663-a76e-1c48a2210bdb
+
+	measure 'Quantidade AA' =
+			-- Mesmo recorte de dias, 12 meses antes. SAMEPERIODLASTYEAR estende até o fim do mês
+			-- quando a seleção termina no último dia do calendário (data de corte) e infla o AA.
+			VAR _Dias =
+			    SELECTCOLUMNS ( VALUES ( Dim_Calendario[Data] ), "Data", EDATE ( Dim_Calendario[Data], -12 ) )
+			RETURN
+			    CALCULATE ( [Quantidade], REMOVEFILTERS ( Dim_Calendario ), TREATAS ( _Dias, Dim_Calendario[Data] ) )
+		formatString: #,0
+		displayFolder: 01 Vendas
+		lineageTag: caffcc8e-0f70-561c-ab75-7e0e9a23ebaa
+
+	measure 'Faturamento AA' =
+			-- Mesmo recorte de dias, 12 meses antes. SAMEPERIODLASTYEAR estende até o fim do mês
+			-- quando a seleção termina no último dia do calendário (data de corte) e infla o AA.
+			VAR _Dias =
+			    SELECTCOLUMNS ( VALUES ( Dim_Calendario[Data] ), "Data", EDATE ( Dim_Calendario[Data], -12 ) )
+			RETURN
+			    CALCULATE ( [Faturamento], REMOVEFILTERS ( Dim_Calendario ), TREATAS ( _Dias, Dim_Calendario[Data] ) )
+		formatString: R$ #,0
+		displayFolder: 01 Vendas
+		lineageTag: 2d30b947-9a27-531c-8d56-cfe719b2d8f8
+
+	measure 'Var % Qtd AA' =
+			-- O calendário termina na data de corte, então "ano corrente" já é YTD
+			-- e o AA compara o mesmo recorte de dias do ano anterior.
+			VAR _AA = [Quantidade AA]
+			RETURN IF ( NOT ISBLANK ( _AA ), DIVIDE ( [Quantidade] - _AA, _AA ) )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 01 Vendas
+		lineageTag: ffdec821-cb4b-5213-8c08-f36e795b04d2
+
+	measure 'Var % Fat AA' =
+			VAR _AA = [Faturamento AA]
+			RETURN IF ( NOT ISBLANK ( _AA ), DIVIDE ( [Faturamento] - _AA, _AA ) )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 01 Vendas
+		lineageTag: 67b11323-b89b-580e-b073-424720dcf161
+
+	measure 'Quantidade Mês Anterior' = CALCULATE ( [Quantidade], DATEADD ( Dim_Calendario[Data], -1, MONTH ) )
+		formatString: #,0
+		displayFolder: 01 Vendas
+		lineageTag: 5fc521b2-19a2-54cc-938a-b691ce1c2a14
+
+	measure '% Qtd s/ Total Produto' = DIVIDE ( [Quantidade], CALCULATE ( [Quantidade], ALLSELECTED ( Dim_Produto ) ) )
+		formatString: 0.0%
+		displayFolder: 01 Vendas
+		lineageTag: 7fe77ffc-d6e2-51a1-803b-c33116380fd9
+
+	measure '% Fat s/ Total Produto' = DIVIDE ( [Faturamento], CALCULATE ( [Faturamento], ALLSELECTED ( Dim_Produto ) ) )
+		formatString: 0.0%
+		displayFolder: 01 Vendas
+		lineageTag: 5b97efc8-ce20-54cc-8749-07bf493b6929
+
+	measure 'Data Corte' =
+			-- Último dia carregado: Dim_Calendario vai até a data de corte (hoje)
+			CALCULATE ( MAX ( Dim_Calendario[Data] ), REMOVEFILTERS ( Dim_Calendario ) )
+		formatString: dd/mm/yyyy
+		displayFolder: 01 Vendas
+		lineageTag: c29bd2f2-3225-5ac9-a01e-a7f35f495b23
+
+	measure 'Qtd Fora da UF da Filial' =
+			-- Volume vendido a clientes de outro estado que não o da filial do vendedor
+			SUMX (
+			    FILTER (
+			        Fato_Vendas,
+			        Fato_Vendas[Tipo_Operacao] IN { "Venda", "Bonificacao" }
+			            && RELATED ( Dim_Filial[UF_Filial] ) <> RELATED ( Dim_Municipio[UF] )
+			    ),
+			    Fato_Vendas[Quantidade]
+			) + 0
+		formatString: #,0
+		displayFolder: 01 Vendas
+		lineageTag: 420b65eb-77d4-5353-ae2a-74b1ae149126
+
+	measure '% Qtd Fora da UF' = DIVIDE ( [Qtd Fora da UF da Filial], [Quantidade] )
+		formatString: 0.0%
+		displayFolder: 01 Vendas
+		lineageTag: ed6a571f-c566-5c9d-8537-164aa029e33f
+
+	measure 'Vendedores Abaixo 80%' =
+			COUNTROWS (
+			    FILTER ( VALUES ( Dim_Vendedor[ID_Vendedor] ), [% Atingimento Meta] < 0.8 )
+			) + 0
+		formatString: #,0
+		displayFolder: 02 Metas
+		lineageTag: 2e5bb453-9db3-56c2-8e2c-be60e67e9ad4
+
+	measure 'Vendedores com Meta' =
+			COUNTROWS (
+			    FILTER ( VALUES ( Dim_Vendedor[ID_Vendedor] ), NOT ISBLANK ( [Meta Linha Leve] ) )
+			) + 0
+		formatString: #,0
+		displayFolder: 02 Metas
+		lineageTag: b8a3a072-b92b-599f-867e-edad9a7bf6fe
+
+	measure 'Carteira Ativa' =
+			-- Clientes com situação "Ativo" na carteira dos vendedores do contexto
+			VAR _VendCtx =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Vendedor[ID_Vendedor] ),
+			        TREATAS ( VALUES ( Dim_Filial[ID_Filial] ), Dim_Vendedor[ID_Filial] )
+			    )
+			RETURN
+			    CALCULATE (
+			        COUNTROWS ( Dim_Cliente ),
+			        KEEPFILTERS ( Dim_Cliente[Situacao] = "Ativo" ),
+			        TREATAS ( _VendCtx, Dim_Cliente[ID_Vendedor] )
+			    )
+		formatString: #,0
+		displayFolder: 03 Carteira e Cobertura
+		lineageTag: 9989c656-0a97-54b9-8bc7-a67125defb03
+
+	measure 'Clientes Positivados' =
+			-- Clientes ativos com pelo menos uma venda no período
+			CALCULATE (
+			    DISTINCTCOUNT ( Fato_Vendas[ID_Cliente] ),
+			    KEEPFILTERS ( Fato_Vendas[Tipo_Operacao] = "Venda" ),
+			    KEEPFILTERS ( Dim_Cliente[Situacao] = "Ativo" )
+			)
+		formatString: #,0
+		displayFolder: 03 Carteira e Cobertura
+		lineageTag: 7292c423-1d65-5a31-9a9c-494921e4ad94
+
+	measure '% Cobertura' =
+			-- Positivação: ativos que compraram ÷ carteira ativa
+			DIVIDE ( [Clientes Positivados], [Carteira Ativa] )
+		formatString: 0.0%
+		displayFolder: 03 Carteira e Cobertura
+		lineageTag: a7f8df72-bd80-56c7-9641-6737b88ad468
+
+	measure '% Cobertura AA' =
+			-- Mesmo recorte de dias, 12 meses antes. SAMEPERIODLASTYEAR estende até o fim do mês
+			-- quando a seleção termina no último dia do calendário (data de corte) e infla o AA.
+			VAR _Dias =
+			    SELECTCOLUMNS ( VALUES ( Dim_Calendario[Data] ), "Data", EDATE ( Dim_Calendario[Data], -12 ) )
+			RETURN
+			    CALCULATE ( [% Cobertura], REMOVEFILTERS ( Dim_Calendario ), TREATAS ( _Dias, Dim_Calendario[Data] ) )
+		formatString: 0.0%
+		displayFolder: 03 Carteira e Cobertura
+		lineageTag: 588b19f9-0f89-51fd-8533-1c433f7a922f
+
+	measure 'Clientes Compradores' = CALCULATE ( DISTINCTCOUNT ( Fato_Vendas[ID_Cliente] ), KEEPFILTERS ( Fato_Vendas[Tipo_Operacao] = "Venda" ) )
+		formatString: #,0
+		displayFolder: 03 Carteira e Cobertura
+		lineageTag: cc7081a5-41ee-5332-b722-19ea3fe38f7d
+
+	measure 'Ticket por Cliente' = DIVIDE ( [Faturamento], [Clientes Compradores] )
+		formatString: R$ #,0
+		displayFolder: 03 Carteira e Cobertura
+		lineageTag: 02c92252-513d-57b4-8a23-94340876f15d
+
+	measure 'Ticket por Cliente AA' =
+			-- Mesmo recorte de dias, 12 meses antes. SAMEPERIODLASTYEAR estende até o fim do mês
+			-- quando a seleção termina no último dia do calendário (data de corte) e infla o AA.
+			VAR _Dias =
+			    SELECTCOLUMNS ( VALUES ( Dim_Calendario[Data] ), "Data", EDATE ( Dim_Calendario[Data], -12 ) )
+			RETURN
+			    CALCULATE ( [Ticket por Cliente], REMOVEFILTERS ( Dim_Calendario ), TREATAS ( _Dias, Dim_Calendario[Data] ) )
+		formatString: R$ #,0
+		displayFolder: 03 Carteira e Cobertura
+		lineageTag: 85701508-54d8-5dd5-8c52-2bd256e4e1b9
+
+	measure 'Qtd Clientes Não Ativos' =
+			-- Governança: volume faturado para cliente inativo ou bloqueado
+			CALCULATE ( [Quantidade], KEEPFILTERS ( Dim_Cliente[Situacao] <> "Ativo" ) ) + 0
+		formatString: #,0
+		displayFolder: 03 Carteira e Cobertura
+		lineageTag: 307ce524-3a7c-5fb0-b073-e7823a2e2709
+
+	measure 'Clientes Não Ativos Comprando' =
+			CALCULATE (
+			    DISTINCTCOUNT ( Fato_Vendas[ID_Cliente] ),
+			    KEEPFILTERS ( Fato_Vendas[Tipo_Operacao] = "Venda" ),
+			    KEEPFILTERS ( Dim_Cliente[Situacao] <> "Ativo" )
+			) + 0
+		formatString: #,0
+		displayFolder: 03 Carteira e Cobertura
+		lineageTag: f98f706c-b2d0-5ad4-9626-6367709c729d
+
+	measure 'Clientes Sem Compra 90d' =
+			-- Ativos da carteira sem venda nos 90 dias até o fim do período
+			VAR _Fim = MAX ( Dim_Calendario[Data] )
+			VAR _VendCtx =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Vendedor[ID_Vendedor] ),
+			        TREATAS ( VALUES ( Dim_Filial[ID_Filial] ), Dim_Vendedor[ID_Filial] )
+			    )
+			VAR _Carteira =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Cliente[ID_Cliente] ),
+			        KEEPFILTERS ( Dim_Cliente[Situacao] = "Ativo" ),
+			        TREATAS ( _VendCtx, Dim_Cliente[ID_Vendedor] )
+			    )
+			VAR _Compraram =
+			    CALCULATETABLE (
+			        VALUES ( Fato_Vendas[ID_Cliente] ),
+			        DATESBETWEEN ( Dim_Calendario[Data], _Fim - 89, _Fim ),
+			        Fato_Vendas[Tipo_Operacao] = "Venda"
+			    )
+			RETURN COUNTROWS ( EXCEPT ( _Carteira, _Compraram ) ) + 0
+		formatString: #,0
+		displayFolder: 03 Carteira e Cobertura
+		lineageTag: 86298f1c-fb7d-56a0-bca0-abbb8dc469a9
+
+	measure 'RFQ Clientes' =
+			VAR _Fim = MAX ( Dim_Calendario[Data] )
+			VAR _Ini = EDATE ( _Fim, -12 ) + 1
+			VAR _VendCtx =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Vendedor[ID_Vendedor] ),
+			        TREATAS ( VALUES ( Dim_Filial[ID_Filial] ), Dim_Vendedor[ID_Filial] )
+			    )
+			VAR _Clientes =
+			    CALCULATETABLE ( VALUES ( Dim_Cliente[ID_Cliente] ), TREATAS ( _VendCtx, Dim_Cliente[ID_Vendedor] ) )
+			VAR _Media =
+			    CALCULATE (
+			        AVERAGEX (
+			            FILTER (
+			                ADDCOLUMNS ( VALUES ( Dim_Cliente[ID_Cliente] ), "@q", [Quantidade] ),
+			                [@q] > 0
+			            ),
+			            [@q]
+			        ),
+			        DATESBETWEEN ( Dim_Calendario[Data], _Ini, _Fim ),
+			        REMOVEFILTERS ( Dim_Cliente ),
+			        REMOVEFILTERS ( Dim_Municipio ),
+			        REMOVEFILTERS ( Dim_Vendedor ),
+			        REMOVEFILTERS ( Dim_Filial )
+			    )
+			VAR _T =
+			    ADDCOLUMNS (
+			        _Clientes,
+			        "@q", CALCULATE ( [Quantidade], DATESBETWEEN ( Dim_Calendario[Data], _Ini, _Fim ) ),
+			        "@v", CALCULATE ( [Faturamento], DATESBETWEEN ( Dim_Calendario[Data], _Ini, _Fim ) ),
+			        "@f", CALCULATE (
+			            DISTINCTCOUNT ( Fato_Vendas[Mes_Ref] ),
+			            DATESBETWEEN ( Dim_Calendario[Data], _Ini, _Fim ),
+			            Fato_Vendas[Tipo_Operacao] = "Venda"
+			        ),
+			        "@u", CALCULATE (
+			            MAX ( Fato_Vendas[Data_Emissao] ),
+			            REMOVEFILTERS ( Dim_Calendario ),
+			            Dim_Calendario[Data] <= _Fim,
+			            Fato_Vendas[Tipo_Operacao] = "Venda"
+			        )
+			    )
+			VAR _S =
+			    ADDCOLUMNS (
+			        _T,
+			        "@seg",
+			            SWITCH (
+			                TRUE (),
+			                COALESCE ( [@q], 0 ) = 0, "Sem compra 12M",
+			                _Fim - [@u] > 60, "Em risco",
+			                [@f] >= 10 && [@q] >= 1.2 * _Media, "Campeões",
+			                [@f] >= 8 && [@q] >= 0.8 * _Media, "Leais",
+			                "Ocasionais"
+			            )
+			    )
+			VAR _Seg = SELECTEDVALUE ( Seg_RFQ[Segmento] )
+			VAR _Sel = FILTER ( _S, ISBLANK ( _Seg ) || [@seg] = _Seg )
+			RETURN COUNTROWS ( _Sel ) + 0
+		formatString: #,0
+		displayFolder: 04 RFQ
+		lineageTag: 23ba76e7-dbb2-5fea-a473-7be4a2c29e81
+
+	measure 'RFQ Qtd 12M' =
+			VAR _Fim = MAX ( Dim_Calendario[Data] )
+			VAR _Ini = EDATE ( _Fim, -12 ) + 1
+			VAR _VendCtx =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Vendedor[ID_Vendedor] ),
+			        TREATAS ( VALUES ( Dim_Filial[ID_Filial] ), Dim_Vendedor[ID_Filial] )
+			    )
+			VAR _Clientes =
+			    CALCULATETABLE ( VALUES ( Dim_Cliente[ID_Cliente] ), TREATAS ( _VendCtx, Dim_Cliente[ID_Vendedor] ) )
+			VAR _Media =
+			    CALCULATE (
+			        AVERAGEX (
+			            FILTER (
+			                ADDCOLUMNS ( VALUES ( Dim_Cliente[ID_Cliente] ), "@q", [Quantidade] ),
+			                [@q] > 0
+			            ),
+			            [@q]
+			        ),
+			        DATESBETWEEN ( Dim_Calendario[Data], _Ini, _Fim ),
+			        REMOVEFILTERS ( Dim_Cliente ),
+			        REMOVEFILTERS ( Dim_Municipio ),
+			        REMOVEFILTERS ( Dim_Vendedor ),
+			        REMOVEFILTERS ( Dim_Filial )
+			    )
+			VAR _T =
+			    ADDCOLUMNS (
+			        _Clientes,
+			        "@q", CALCULATE ( [Quantidade], DATESBETWEEN ( Dim_Calendario[Data], _Ini, _Fim ) ),
+			        "@v", CALCULATE ( [Faturamento], DATESBETWEEN ( Dim_Calendario[Data], _Ini, _Fim ) ),
+			        "@f", CALCULATE (
+			            DISTINCTCOUNT ( Fato_Vendas[Mes_Ref] ),
+			            DATESBETWEEN ( Dim_Calendario[Data], _Ini, _Fim ),
+			            Fato_Vendas[Tipo_Operacao] = "Venda"
+			        ),
+			        "@u", CALCULATE (
+			            MAX ( Fato_Vendas[Data_Emissao] ),
+			            REMOVEFILTERS ( Dim_Calendario ),
+			            Dim_Calendario[Data] <= _Fim,
+			            Fato_Vendas[Tipo_Operacao] = "Venda"
+			        )
+			    )
+			VAR _S =
+			    ADDCOLUMNS (
+			        _T,
+			        "@seg",
+			            SWITCH (
+			                TRUE (),
+			                COALESCE ( [@q], 0 ) = 0, "Sem compra 12M",
+			                _Fim - [@u] > 60, "Em risco",
+			                [@f] >= 10 && [@q] >= 1.2 * _Media, "Campeões",
+			                [@f] >= 8 && [@q] >= 0.8 * _Media, "Leais",
+			                "Ocasionais"
+			            )
+			    )
+			VAR _Seg = SELECTEDVALUE ( Seg_RFQ[Segmento] )
+			VAR _Sel = FILTER ( _S, ISBLANK ( _Seg ) || [@seg] = _Seg )
+			RETURN SUMX ( _Sel, [@q] ) + 0
+		formatString: #,0
+		displayFolder: 04 RFQ
+		lineageTag: c5e647f9-3ca5-5c96-a826-c4b5c66c9057
+
+	measure 'RFQ Fat 12M' =
+			VAR _Fim = MAX ( Dim_Calendario[Data] )
+			VAR _Ini = EDATE ( _Fim, -12 ) + 1
+			VAR _VendCtx =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Vendedor[ID_Vendedor] ),
+			        TREATAS ( VALUES ( Dim_Filial[ID_Filial] ), Dim_Vendedor[ID_Filial] )
+			    )
+			VAR _Clientes =
+			    CALCULATETABLE ( VALUES ( Dim_Cliente[ID_Cliente] ), TREATAS ( _VendCtx, Dim_Cliente[ID_Vendedor] ) )
+			VAR _Media =
+			    CALCULATE (
+			        AVERAGEX (
+			            FILTER (
+			                ADDCOLUMNS ( VALUES ( Dim_Cliente[ID_Cliente] ), "@q", [Quantidade] ),
+			                [@q] > 0
+			            ),
+			            [@q]
+			        ),
+			        DATESBETWEEN ( Dim_Calendario[Data], _Ini, _Fim ),
+			        REMOVEFILTERS ( Dim_Cliente ),
+			        REMOVEFILTERS ( Dim_Municipio ),
+			        REMOVEFILTERS ( Dim_Vendedor ),
+			        REMOVEFILTERS ( Dim_Filial )
+			    )
+			VAR _T =
+			    ADDCOLUMNS (
+			        _Clientes,
+			        "@q", CALCULATE ( [Quantidade], DATESBETWEEN ( Dim_Calendario[Data], _Ini, _Fim ) ),
+			        "@v", CALCULATE ( [Faturamento], DATESBETWEEN ( Dim_Calendario[Data], _Ini, _Fim ) ),
+			        "@f", CALCULATE (
+			            DISTINCTCOUNT ( Fato_Vendas[Mes_Ref] ),
+			            DATESBETWEEN ( Dim_Calendario[Data], _Ini, _Fim ),
+			            Fato_Vendas[Tipo_Operacao] = "Venda"
+			        ),
+			        "@u", CALCULATE (
+			            MAX ( Fato_Vendas[Data_Emissao] ),
+			            REMOVEFILTERS ( Dim_Calendario ),
+			            Dim_Calendario[Data] <= _Fim,
+			            Fato_Vendas[Tipo_Operacao] = "Venda"
+			        )
+			    )
+			VAR _S =
+			    ADDCOLUMNS (
+			        _T,
+			        "@seg",
+			            SWITCH (
+			                TRUE (),
+			                COALESCE ( [@q], 0 ) = 0, "Sem compra 12M",
+			                _Fim - [@u] > 60, "Em risco",
+			                [@f] >= 10 && [@q] >= 1.2 * _Media, "Campeões",
+			                [@f] >= 8 && [@q] >= 0.8 * _Media, "Leais",
+			                "Ocasionais"
+			            )
+			    )
+			VAR _Seg = SELECTEDVALUE ( Seg_RFQ[Segmento] )
+			VAR _Sel = FILTER ( _S, ISBLANK ( _Seg ) || [@seg] = _Seg )
+			RETURN SUMX ( _Sel, [@v] ) + 0
+		formatString: R$ #,0
+		displayFolder: 04 RFQ
+		lineageTag: 4868936c-3622-5edc-9133-1049003ed436
+
+	measure 'RFQ % Qtd 12M' =
+			VAR _Fim = MAX ( Dim_Calendario[Data] )
+			VAR _Ini = EDATE ( _Fim, -12 ) + 1
+			VAR _VendCtx =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Vendedor[ID_Vendedor] ),
+			        TREATAS ( VALUES ( Dim_Filial[ID_Filial] ), Dim_Vendedor[ID_Filial] )
+			    )
+			VAR _Clientes =
+			    CALCULATETABLE ( VALUES ( Dim_Cliente[ID_Cliente] ), TREATAS ( _VendCtx, Dim_Cliente[ID_Vendedor] ) )
+			VAR _Media =
+			    CALCULATE (
+			        AVERAGEX (
+			            FILTER (
+			                ADDCOLUMNS ( VALUES ( Dim_Cliente[ID_Cliente] ), "@q", [Quantidade] ),
+			                [@q] > 0
+			            ),
+			            [@q]
+			        ),
+			        DATESBETWEEN ( Dim_Calendario[Data], _Ini, _Fim ),
+			        REMOVEFILTERS ( Dim_Cliente ),
+			        REMOVEFILTERS ( Dim_Municipio ),
+			        REMOVEFILTERS ( Dim_Vendedor ),
+			        REMOVEFILTERS ( Dim_Filial )
+			    )
+			VAR _T =
+			    ADDCOLUMNS (
+			        _Clientes,
+			        "@q", CALCULATE ( [Quantidade], DATESBETWEEN ( Dim_Calendario[Data], _Ini, _Fim ) ),
+			        "@v", CALCULATE ( [Faturamento], DATESBETWEEN ( Dim_Calendario[Data], _Ini, _Fim ) ),
+			        "@f", CALCULATE (
+			            DISTINCTCOUNT ( Fato_Vendas[Mes_Ref] ),
+			            DATESBETWEEN ( Dim_Calendario[Data], _Ini, _Fim ),
+			            Fato_Vendas[Tipo_Operacao] = "Venda"
+			        ),
+			        "@u", CALCULATE (
+			            MAX ( Fato_Vendas[Data_Emissao] ),
+			            REMOVEFILTERS ( Dim_Calendario ),
+			            Dim_Calendario[Data] <= _Fim,
+			            Fato_Vendas[Tipo_Operacao] = "Venda"
+			        )
+			    )
+			VAR _S =
+			    ADDCOLUMNS (
+			        _T,
+			        "@seg",
+			            SWITCH (
+			                TRUE (),
+			                COALESCE ( [@q], 0 ) = 0, "Sem compra 12M",
+			                _Fim - [@u] > 60, "Em risco",
+			                [@f] >= 10 && [@q] >= 1.2 * _Media, "Campeões",
+			                [@f] >= 8 && [@q] >= 0.8 * _Media, "Leais",
+			                "Ocasionais"
+			            )
+			    )
+			VAR _Seg = SELECTEDVALUE ( Seg_RFQ[Segmento] )
+			VAR _Sel = FILTER ( _S, ISBLANK ( _Seg ) || [@seg] = _Seg )
+			RETURN DIVIDE ( SUMX ( _Sel, [@q] ), SUMX ( _S, [@q] ) ) + 0
+		formatString: 0.0%
+		displayFolder: 04 RFQ
+		lineageTag: ede9621b-53c3-5de1-b50f-ad2e1811e5bf
+
+	measure 'RFQ % Clientes' =
+			VAR _Fim = MAX ( Dim_Calendario[Data] )
+			VAR _Ini = EDATE ( _Fim, -12 ) + 1
+			VAR _VendCtx =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Vendedor[ID_Vendedor] ),
+			        TREATAS ( VALUES ( Dim_Filial[ID_Filial] ), Dim_Vendedor[ID_Filial] )
+			    )
+			VAR _Clientes =
+			    CALCULATETABLE ( VALUES ( Dim_Cliente[ID_Cliente] ), TREATAS ( _VendCtx, Dim_Cliente[ID_Vendedor] ) )
+			VAR _Media =
+			    CALCULATE (
+			        AVERAGEX (
+			            FILTER (
+			                ADDCOLUMNS ( VALUES ( Dim_Cliente[ID_Cliente] ), "@q", [Quantidade] ),
+			                [@q] > 0
+			            ),
+			            [@q]
+			        ),
+			        DATESBETWEEN ( Dim_Calendario[Data], _Ini, _Fim ),
+			        REMOVEFILTERS ( Dim_Cliente ),
+			        REMOVEFILTERS ( Dim_Municipio ),
+			        REMOVEFILTERS ( Dim_Vendedor ),
+			        REMOVEFILTERS ( Dim_Filial )
+			    )
+			VAR _T =
+			    ADDCOLUMNS (
+			        _Clientes,
+			        "@q", CALCULATE ( [Quantidade], DATESBETWEEN ( Dim_Calendario[Data], _Ini, _Fim ) ),
+			        "@v", CALCULATE ( [Faturamento], DATESBETWEEN ( Dim_Calendario[Data], _Ini, _Fim ) ),
+			        "@f", CALCULATE (
+			            DISTINCTCOUNT ( Fato_Vendas[Mes_Ref] ),
+			            DATESBETWEEN ( Dim_Calendario[Data], _Ini, _Fim ),
+			            Fato_Vendas[Tipo_Operacao] = "Venda"
+			        ),
+			        "@u", CALCULATE (
+			            MAX ( Fato_Vendas[Data_Emissao] ),
+			            REMOVEFILTERS ( Dim_Calendario ),
+			            Dim_Calendario[Data] <= _Fim,
+			            Fato_Vendas[Tipo_Operacao] = "Venda"
+			        )
+			    )
+			VAR _S =
+			    ADDCOLUMNS (
+			        _T,
+			        "@seg",
+			            SWITCH (
+			                TRUE (),
+			                COALESCE ( [@q], 0 ) = 0, "Sem compra 12M",
+			                _Fim - [@u] > 60, "Em risco",
+			                [@f] >= 10 && [@q] >= 1.2 * _Media, "Campeões",
+			                [@f] >= 8 && [@q] >= 0.8 * _Media, "Leais",
+			                "Ocasionais"
+			            )
+			    )
+			VAR _Seg = SELECTEDVALUE ( Seg_RFQ[Segmento] )
+			VAR _Sel = FILTER ( _S, ISBLANK ( _Seg ) || [@seg] = _Seg )
+			RETURN DIVIDE ( COUNTROWS ( _Sel ), COUNTROWS ( _S ) ) + 0
+		formatString: 0.0%
+		displayFolder: 04 RFQ
+		lineageTag: f92260e5-608e-50fc-afd9-55f10314c322
+
+	measure 'RFQ Ordem Segmento' = MIN ( Seg_RFQ[Ordem] )
+		formatString: 0
+		displayFolder: 04 RFQ
+		lineageTag: 143dd6f9-9929-5915-b474-1ef7e38503ec
+
+	measure 'Meses Equivalentes' =
+			-- Fração de mês coberta pelo contexto (o mês corrente parcial conta pelos dias decorridos)
+			SUMX (
+			    VALUES ( Dim_Calendario[Inicio_Mes] ),
+			    DIVIDE (
+			        CALCULATE ( COUNTROWS ( Dim_Calendario ) ),
+			        DAY ( EOMONTH ( Dim_Calendario[Inicio_Mes], 0 ) )
+			    )
+			)
+		formatString: 0.00
+		displayFolder: 05 Potencial e Share
+		lineageTag: 2ddf4028-00d0-5ceb-bc15-572d4454134f
+
+	measure 'Potencial Mensal' =
+			-- Potencial é de mercado (município). Não se reparte por vendedor, filial, produto ou cliente.
+			IF ( NOT ( ISFILTERED ( Dim_Vendedor ) || ISFILTERED ( Dim_Filial )
+			    || ISFILTERED ( Dim_Produto ) || ISFILTERED ( Dim_Cliente ) ), SUM ( Dim_Municipio[Potencial_Baterias_Mes] ) )
+		formatString: #,0
+		displayFolder: 05 Potencial e Share
+		lineageTag: 57fb6ba6-a7cd-5c40-b79e-3f3ac1ee4d74
+
+	measure 'Potencial Período' = IF ( NOT ISBLANK ( [Potencial Mensal] ), [Potencial Mensal] * [Meses Equivalentes] )
+		formatString: #,0
+		displayFolder: 05 Potencial e Share
+		lineageTag: bff2c109-a12c-5b70-bbf9-7cdc439566ad
+
+	measure 'Share Potencial' = DIVIDE ( [Quantidade], [Potencial Período] )
+		formatString: 0.0%
+		displayFolder: 05 Potencial e Share
+		lineageTag: f7cf1a58-b729-562d-b326-7d8371f342b0
+
+	measure 'Share Potencial AA' =
+			-- Mesmo recorte de dias, 12 meses antes. SAMEPERIODLASTYEAR estende até o fim do mês
+			-- quando a seleção termina no último dia do calendário (data de corte) e infla o AA.
+			VAR _Dias =
+			    SELECTCOLUMNS ( VALUES ( Dim_Calendario[Data] ), "Data", EDATE ( Dim_Calendario[Data], -12 ) )
+			RETURN
+			    CALCULATE ( [Share Potencial], REMOVEFILTERS ( Dim_Calendario ), TREATAS ( _Dias, Dim_Calendario[Data] ) )
+		formatString: 0.0%
+		displayFolder: 05 Potencial e Share
+		lineageTag: 5c13c8ff-20b0-57d7-b589-c95cda66f8ab
+
+	measure 'Var Share p.p.' =
+			VAR _aa = [Share Potencial AA]
+			RETURN IF ( NOT ISBLANK ( _aa ) && NOT ISBLANK ( [Share Potencial] ), ( [Share Potencial] - _aa ) * 100 )
+		formatString: +0.0;-0.0;0.0
+		displayFolder: 05 Potencial e Share
+		lineageTag: 051c470e-0365-505c-8caf-c650cd0aad8b
+
+	measure 'Gap Potencial' =
+			VAR _p = [Potencial Período]
+			RETURN IF ( NOT ISBLANK ( _p ), MAX ( _p - [Quantidade], 0 ) )
+		formatString: #,0
+		displayFolder: 05 Potencial e Share
+		lineageTag: 8e0aba6f-d90f-5df9-ab46-2407f6dc2d74
+
+	measure 'Prospects Total' = COUNTROWS ( Fato_Prospects ) + 0
+		formatString: #,0
+		displayFolder: 05 Potencial e Share
+		lineageTag: c99ba035-5e39-554e-a6f8-333d5f8fc7c3
+
+	measure 'Prospects Liberados' = CALCULATE ( COUNTROWS ( Fato_Prospects ), KEEPFILTERS ( Fato_Prospects[Status_Prospect] = "Liberado" ) ) + 0
+		formatString: #,0
+		displayFolder: 05 Potencial e Share
+		lineageTag: 4caf1565-048f-5450-861c-50f70ac13248
+
+	measure 'Prospects Contatáveis' =
+			-- Liberados para abordagem e com telefone cadastrado
+			CALCULATE (
+			    COUNTROWS ( Fato_Prospects ),
+			    KEEPFILTERS ( Fato_Prospects[Status_Prospect] = "Liberado" ),
+			    KEEPFILTERS ( Fato_Prospects[Possui_Telefone] = "Sim" )
+			) + 0
+		formatString: #,0
+		displayFolder: 05 Potencial e Share
+		lineageTag: 3c789210-994b-5eaa-a568-1f633b23821d
+
+	measure 'Prospects Pendentes' = CALCULATE ( COUNTROWS ( Fato_Prospects ), KEEPFILTERS ( Fato_Prospects[Status_Prospect] = "Pendente Revisão" ) ) + 0
+		formatString: #,0
+		displayFolder: 05 Potencial e Share
+		lineageTag: 1be6adae-3df1-5732-9526-d3cce3a5992b
+
+	measure 'SWOT Clientes' =
+			VAR _VendCtx =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Vendedor[ID_Vendedor] ),
+			        TREATAS ( VALUES ( Dim_Filial[ID_Filial] ), Dim_Vendedor[ID_Filial] )
+			    )
+			VAR _Media =
+			    CALCULATE (
+			        AVERAGEX (
+			            FILTER ( ADDCOLUMNS ( VALUES ( Dim_Cliente[ID_Cliente] ), "@q", [Quantidade] ), [@q] > 0 ),
+			            [@q]
+			        ),
+			        REMOVEFILTERS ( Dim_Cliente ),
+			        REMOVEFILTERS ( Dim_Municipio ),
+			        REMOVEFILTERS ( Dim_Vendedor ),
+			        REMOVEFILTERS ( Dim_Filial )
+			    )
+			VAR _T =
+			    FILTER (
+			        ADDCOLUMNS (
+			            CALCULATETABLE ( VALUES ( Dim_Cliente[ID_Cliente] ), TREATAS ( _VendCtx, Dim_Cliente[ID_Vendedor] ) ),
+			            "@q", [Quantidade],
+			            "@aa", [Quantidade AA]
+			        ),
+			        [@q] > 0
+			    )
+			VAR _S =
+			    ADDCOLUMNS (
+			        _T,
+			        "@quad",
+			            VAR _grande = [@q] >= _Media
+			            VAR _cresce = [@q] >= COALESCE ( [@aa], 0 )
+			            RETURN
+			                SWITCH (
+			                    TRUE (),
+			                    _grande && _cresce, "Fortalezas",
+			                    NOT _grande && _cresce, "Oportunidades",
+			                    NOT _grande && NOT _cresce, "Fraquezas",
+			                    "Atenção"
+			                )
+			    )
+			VAR _Quad = SELECTEDVALUE ( Seg_SWOT[Quadrante] )
+			VAR _Sel = FILTER ( _S, ISBLANK ( _Quad ) || [@quad] = _Quad )
+			RETURN COUNTROWS ( _Sel ) + 0
+		formatString: #,0
+		displayFolder: 06 SWOT
+		lineageTag: b91787cb-54c4-54f3-9db5-2eb61a0993ef
+
+	measure 'SWOT Qtd' =
+			VAR _VendCtx =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Vendedor[ID_Vendedor] ),
+			        TREATAS ( VALUES ( Dim_Filial[ID_Filial] ), Dim_Vendedor[ID_Filial] )
+			    )
+			VAR _Media =
+			    CALCULATE (
+			        AVERAGEX (
+			            FILTER ( ADDCOLUMNS ( VALUES ( Dim_Cliente[ID_Cliente] ), "@q", [Quantidade] ), [@q] > 0 ),
+			            [@q]
+			        ),
+			        REMOVEFILTERS ( Dim_Cliente ),
+			        REMOVEFILTERS ( Dim_Municipio ),
+			        REMOVEFILTERS ( Dim_Vendedor ),
+			        REMOVEFILTERS ( Dim_Filial )
+			    )
+			VAR _T =
+			    FILTER (
+			        ADDCOLUMNS (
+			            CALCULATETABLE ( VALUES ( Dim_Cliente[ID_Cliente] ), TREATAS ( _VendCtx, Dim_Cliente[ID_Vendedor] ) ),
+			            "@q", [Quantidade],
+			            "@aa", [Quantidade AA]
+			        ),
+			        [@q] > 0
+			    )
+			VAR _S =
+			    ADDCOLUMNS (
+			        _T,
+			        "@quad",
+			            VAR _grande = [@q] >= _Media
+			            VAR _cresce = [@q] >= COALESCE ( [@aa], 0 )
+			            RETURN
+			                SWITCH (
+			                    TRUE (),
+			                    _grande && _cresce, "Fortalezas",
+			                    NOT _grande && _cresce, "Oportunidades",
+			                    NOT _grande && NOT _cresce, "Fraquezas",
+			                    "Atenção"
+			                )
+			    )
+			VAR _Quad = SELECTEDVALUE ( Seg_SWOT[Quadrante] )
+			VAR _Sel = FILTER ( _S, ISBLANK ( _Quad ) || [@quad] = _Quad )
+			RETURN SUMX ( _Sel, [@q] ) + 0
+		formatString: #,0
+		displayFolder: 06 SWOT
+		lineageTag: 7ce6c174-4696-5c58-add2-d11754e1b3d4
+
+	measure 'SWOT % Qtd' =
+			VAR _VendCtx =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Vendedor[ID_Vendedor] ),
+			        TREATAS ( VALUES ( Dim_Filial[ID_Filial] ), Dim_Vendedor[ID_Filial] )
+			    )
+			VAR _Media =
+			    CALCULATE (
+			        AVERAGEX (
+			            FILTER ( ADDCOLUMNS ( VALUES ( Dim_Cliente[ID_Cliente] ), "@q", [Quantidade] ), [@q] > 0 ),
+			            [@q]
+			        ),
+			        REMOVEFILTERS ( Dim_Cliente ),
+			        REMOVEFILTERS ( Dim_Municipio ),
+			        REMOVEFILTERS ( Dim_Vendedor ),
+			        REMOVEFILTERS ( Dim_Filial )
+			    )
+			VAR _T =
+			    FILTER (
+			        ADDCOLUMNS (
+			            CALCULATETABLE ( VALUES ( Dim_Cliente[ID_Cliente] ), TREATAS ( _VendCtx, Dim_Cliente[ID_Vendedor] ) ),
+			            "@q", [Quantidade],
+			            "@aa", [Quantidade AA]
+			        ),
+			        [@q] > 0
+			    )
+			VAR _S =
+			    ADDCOLUMNS (
+			        _T,
+			        "@quad",
+			            VAR _grande = [@q] >= _Media
+			            VAR _cresce = [@q] >= COALESCE ( [@aa], 0 )
+			            RETURN
+			                SWITCH (
+			                    TRUE (),
+			                    _grande && _cresce, "Fortalezas",
+			                    NOT _grande && _cresce, "Oportunidades",
+			                    NOT _grande && NOT _cresce, "Fraquezas",
+			                    "Atenção"
+			                )
+			    )
+			VAR _Quad = SELECTEDVALUE ( Seg_SWOT[Quadrante] )
+			VAR _Sel = FILTER ( _S, ISBLANK ( _Quad ) || [@quad] = _Quad )
+			RETURN DIVIDE ( SUMX ( _Sel, [@q] ), SUMX ( _S, [@q] ) ) + 0
+		formatString: 0.0%
+		displayFolder: 06 SWOT
+		lineageTag: ac688bfb-ccbe-5a37-9fcd-7ec3d835b9c6
+
+	measure 'SWOT Var Qtd' =
+			VAR _VendCtx =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Vendedor[ID_Vendedor] ),
+			        TREATAS ( VALUES ( Dim_Filial[ID_Filial] ), Dim_Vendedor[ID_Filial] )
+			    )
+			VAR _Media =
+			    CALCULATE (
+			        AVERAGEX (
+			            FILTER ( ADDCOLUMNS ( VALUES ( Dim_Cliente[ID_Cliente] ), "@q", [Quantidade] ), [@q] > 0 ),
+			            [@q]
+			        ),
+			        REMOVEFILTERS ( Dim_Cliente ),
+			        REMOVEFILTERS ( Dim_Municipio ),
+			        REMOVEFILTERS ( Dim_Vendedor ),
+			        REMOVEFILTERS ( Dim_Filial )
+			    )
+			VAR _T =
+			    FILTER (
+			        ADDCOLUMNS (
+			            CALCULATETABLE ( VALUES ( Dim_Cliente[ID_Cliente] ), TREATAS ( _VendCtx, Dim_Cliente[ID_Vendedor] ) ),
+			            "@q", [Quantidade],
+			            "@aa", [Quantidade AA]
+			        ),
+			        [@q] > 0
+			    )
+			VAR _S =
+			    ADDCOLUMNS (
+			        _T,
+			        "@quad",
+			            VAR _grande = [@q] >= _Media
+			            VAR _cresce = [@q] >= COALESCE ( [@aa], 0 )
+			            RETURN
+			                SWITCH (
+			                    TRUE (),
+			                    _grande && _cresce, "Fortalezas",
+			                    NOT _grande && _cresce, "Oportunidades",
+			                    NOT _grande && NOT _cresce, "Fraquezas",
+			                    "Atenção"
+			                )
+			    )
+			VAR _Quad = SELECTEDVALUE ( Seg_SWOT[Quadrante] )
+			VAR _Sel = FILTER ( _S, ISBLANK ( _Quad ) || [@quad] = _Quad )
+			VAR _aa = SUMX ( _Sel, [@aa] )
+			RETURN IF ( _aa > 0, DIVIDE ( SUMX ( _Sel, [@q] ) - _aa, _aa ) )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 06 SWOT
+		lineageTag: 33e82e74-ef8b-560f-9cb7-2304ea1ff5a3
+
+	measure 'Média Qtd por Cliente' =
+			-- Linha de corte do porte no SWOT: média da base inteira no período
+			CALCULATE (
+			    AVERAGEX (
+			        FILTER ( ADDCOLUMNS ( VALUES ( Dim_Cliente[ID_Cliente] ), "@q", [Quantidade] ), [@q] > 0 ),
+			        [@q]
+			    ),
+			    REMOVEFILTERS ( Dim_Cliente ),
+			    REMOVEFILTERS ( Dim_Municipio ),
+			    REMOVEFILTERS ( Dim_Vendedor ),
+			    REMOVEFILTERS ( Dim_Filial )
+			)
+		formatString: #,0.0
+		displayFolder: 06 SWOT
+		lineageTag: 8bd797af-5d90-5aea-a85c-2522fefe657b
+
+	measure 'Sucata em Aberto kg' =
+			-- Posição na data de corte: Fato_Sucata não se liga ao calendário
+			VAR _VendCtx =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Vendedor[ID_Vendedor] ),
+			        TREATAS ( VALUES ( Dim_Filial[ID_Filial] ), Dim_Vendedor[ID_Filial] )
+			    )
+			RETURN
+			    CALCULATE ( SUM ( Fato_Sucata[Sucata_Em_Aberto_KG] ), TREATAS ( _VendCtx, Dim_Cliente[ID_Vendedor] ) )
+		formatString: #,0
+		displayFolder: 07 Sucata e EcoCiclo
+		lineageTag: 66dd470b-491b-5d05-a2de-766327a400e9
+
+	measure 'Sucata Devida kg' =
+			VAR _VendCtx =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Vendedor[ID_Vendedor] ),
+			        TREATAS ( VALUES ( Dim_Filial[ID_Filial] ), Dim_Vendedor[ID_Filial] )
+			    )
+			RETURN
+			    CALCULATE ( SUM ( Fato_Sucata[Sucata_Devida_KG] ), TREATAS ( _VendCtx, Dim_Cliente[ID_Vendedor] ) )
+		formatString: #,0
+		displayFolder: 07 Sucata e EcoCiclo
+		lineageTag: ac37209a-5319-5e83-97f4-674a4f7918bd
+
+	measure 'Sucata Entregue kg' =
+			VAR _VendCtx =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Vendedor[ID_Vendedor] ),
+			        TREATAS ( VALUES ( Dim_Filial[ID_Filial] ), Dim_Vendedor[ID_Filial] )
+			    )
+			RETURN
+			    CALCULATE ( SUM ( Fato_Sucata[Sucata_Entregue_KG] ), TREATAS ( _VendCtx, Dim_Cliente[ID_Vendedor] ) )
+		formatString: #,0
+		displayFolder: 07 Sucata e EcoCiclo
+		lineageTag: a5887bb0-dd86-550c-bcbf-d0b67eeb6b7d
+
+	measure 'Lançamentos em Aberto' =
+			VAR _VendCtx =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Vendedor[ID_Vendedor] ),
+			        TREATAS ( VALUES ( Dim_Filial[ID_Filial] ), Dim_Vendedor[ID_Filial] )
+			    )
+			RETURN
+			    CALCULATE ( COUNTROWS ( Fato_Sucata ), TREATAS ( _VendCtx, Dim_Cliente[ID_Vendedor] ) )
+		formatString: #,0
+		displayFolder: 07 Sucata e EcoCiclo
+		lineageTag: ac67188a-5f91-5250-8b6e-fc55bb9fdf69
+
+	measure 'Clientes com Sucata' =
+			VAR _VendCtx =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Vendedor[ID_Vendedor] ),
+			        TREATAS ( VALUES ( Dim_Filial[ID_Filial] ), Dim_Vendedor[ID_Filial] )
+			    )
+			RETURN
+			    CALCULATE ( DISTINCTCOUNT ( Fato_Sucata[ID_Cliente] ), TREATAS ( _VendCtx, Dim_Cliente[ID_Vendedor] ) )
+		formatString: #,0
+		displayFolder: 07 Sucata e EcoCiclo
+		lineageTag: 8c6f7301-b8c4-56a1-a862-2c2f6d943eda
+
+	measure 'Sucata > 60 dias kg' =
+			VAR _VendCtx =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Vendedor[ID_Vendedor] ),
+			        TREATAS ( VALUES ( Dim_Filial[ID_Filial] ), Dim_Vendedor[ID_Filial] )
+			    )
+			RETURN
+			    CALCULATE ( SUM ( Fato_Sucata[Sucata_Em_Aberto_KG] ), Fato_Sucata[Dias_Atraso] > 60, TREATAS ( _VendCtx, Dim_Cliente[ID_Vendedor] ) )
+		formatString: #,0
+		displayFolder: 07 Sucata e EcoCiclo
+		lineageTag: e855bd57-e5cb-5e8f-b307-df7d8717e35b
+
+	measure '% Sucata > 60 dias' = DIVIDE ( [Sucata > 60 dias kg], [Sucata em Aberto kg] )
+		formatString: 0.0%
+		displayFolder: 07 Sucata e EcoCiclo
+		lineageTag: 3a4b8198-beb5-5337-b4e8-d1bf2d494d54
+
+	measure '% Sucata Recuperada' =
+			-- Dos lançamentos ainda abertos, quanto do devido já voltou
+			DIVIDE ( [Sucata Entregue kg], [Sucata Devida kg] )
+		formatString: 0.0%
+		displayFolder: 07 Sucata e EcoCiclo
+		lineageTag: 3deccb31-de00-5fcc-bf8d-797e58656593
+
+	measure 'Atraso Médio Ponderado' =
+			-- Dias de atraso ponderados pelos kg em aberto
+			VAR _VendCtx =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Vendedor[ID_Vendedor] ),
+			        TREATAS ( VALUES ( Dim_Filial[ID_Filial] ), Dim_Vendedor[ID_Filial] )
+			    )
+			RETURN
+			    CALCULATE ( DIVIDE (
+			            SUMX ( Fato_Sucata, Fato_Sucata[Sucata_Em_Aberto_KG] * Fato_Sucata[Dias_Atraso] ),
+			            SUM ( Fato_Sucata[Sucata_Em_Aberto_KG] )
+			        ), TREATAS ( _VendCtx, Dim_Cliente[ID_Vendedor] ) )
+		formatString: 0
+		displayFolder: 07 Sucata e EcoCiclo
+		lineageTag: 92d9e47d-e354-5beb-bf09-1f5cbd9370e4
+
+	measure '% Vendas com Troca de Casco' =
+			DIVIDE (
+			    CALCULATE ( [Qtd Venda], KEEPFILTERS ( Fato_Vendas[Com_Troca_Casco] = "Sim" ) ),
+			    [Qtd Venda]
+			)
+		formatString: 0.0%
+		displayFolder: 07 Sucata e EcoCiclo
+		lineageTag: ab1fc9b1-30a6-5d25-9f7a-9b54d0f82e6d
+
+	measure 'Baterias sem Casco' =
+			-- Vendas sem devolução do casco no ato: geram débito de sucata
+			CALCULATE ( [Qtd Venda], KEEPFILTERS ( Fato_Vendas[Com_Troca_Casco] = "Não" ) ) + 0
+		formatString: #,0
+		displayFolder: 07 Sucata e EcoCiclo
+		lineageTag: d3f86fe5-d94a-5595-bf32-0aaec2d7be17
+
+	measure 'Qtd Filtros Ativos' =
+			ISFILTERED ( Dim_Calendario[Ano] ) + ISFILTERED ( Dim_Filial[Filial_Curta] )
+			    + ISFILTERED ( Dim_Vendedor[Nome_Vendedor] ) + ISFILTERED ( Dim_Produto[Linha] )
+			    + ISFILTERED ( Dim_Cliente[Ramo_Atividade] ) + ISFILTERED ( Dim_Municipio[Municipio] )
+		formatString: 0
+		displayFolder: 91 HTML
+		lineageTag: 0a6e88b7-b795-5a0e-abe1-9bed898f054f
+
+	measure 'Trilha Filtros HTML' =
+			VAR _Ch = "<span class='chip'>"
+			VAR _Fe = "</span>"
+			VAR _Chips =
+			    IF ( ISFILTERED ( Dim_Calendario[Ano] ),
+			        VAR _n = COUNTROWS ( VALUES ( Dim_Calendario[Ano] ) )
+			        RETURN _Ch & "Ano · "
+			            & IF ( _n > 3, _n & " selecionados", CONCATENATEX ( VALUES ( Dim_Calendario[Ano] ), Dim_Calendario[Ano], ", ", Dim_Calendario[Ano], ASC ) )
+			            & _Fe )
+			    & IF ( ISFILTERED ( Dim_Filial[Filial_Curta] ),
+			        VAR _n = COUNTROWS ( VALUES ( Dim_Filial[Filial_Curta] ) )
+			        RETURN _Ch & "Filial · "
+			            & IF ( _n > 3, _n & " selecionados", CONCATENATEX ( VALUES ( Dim_Filial[Filial_Curta] ), Dim_Filial[Filial_Curta], ", ", Dim_Filial[Filial_Curta], ASC ) )
+			            & _Fe )
+			    & IF ( ISFILTERED ( Dim_Vendedor[Nome_Vendedor] ),
+			        VAR _n = COUNTROWS ( VALUES ( Dim_Vendedor[Nome_Vendedor] ) )
+			        RETURN _Ch & "Vendedor · "
+			            & IF ( _n > 2, _n & " selecionados", CONCATENATEX ( VALUES ( Dim_Vendedor[Nome_Vendedor] ), Dim_Vendedor[Nome_Vendedor], ", ", Dim_Vendedor[Nome_Vendedor], ASC ) )
+			            & _Fe )
+			    & IF ( ISFILTERED ( Dim_Produto[Linha] ),
+			        VAR _n = COUNTROWS ( VALUES ( Dim_Produto[Linha] ) )
+			        RETURN _Ch & "Linha · "
+			            & IF ( _n > 3, _n & " selecionados", CONCATENATEX ( VALUES ( Dim_Produto[Linha] ), Dim_Produto[Linha], ", ", Dim_Produto[Linha], ASC ) )
+			            & _Fe )
+			    & IF ( ISFILTERED ( Dim_Cliente[Ramo_Atividade] ),
+			        VAR _n = COUNTROWS ( VALUES ( Dim_Cliente[Ramo_Atividade] ) )
+			        RETURN _Ch & "Ramo · "
+			            & IF ( _n > 2, _n & " selecionados", CONCATENATEX ( VALUES ( Dim_Cliente[Ramo_Atividade] ), Dim_Cliente[Ramo_Atividade], ", ", Dim_Cliente[Ramo_Atividade], ASC ) )
+			            & _Fe )
+			    & IF ( ISFILTERED ( Dim_Municipio[Municipio] ),
+			        VAR _n = COUNTROWS ( VALUES ( Dim_Municipio[Municipio] ) )
+			        RETURN _Ch & "Município · "
+			            & IF ( _n > 2, _n & " selecionados", CONCATENATEX ( VALUES ( Dim_Municipio[Municipio] ), Dim_Municipio[Municipio], ", ", Dim_Municipio[Municipio], ASC ) )
+			            & _Fe )
+			VAR _Per =
+			    "<span class='per'>" & FORMAT ( MIN ( Dim_Calendario[Data] ), "dd/mm/yy" ) & " – "
+			        & FORMAT ( MAX ( Dim_Calendario[Data] ), "dd/mm/yy" ) & "</span>"
+			RETURN
+			    _Per & IF ( _Chips = "", "<span class='per'>· visão consolidada, sem filtros</span>", _Chips )
+		displayFolder: 91 HTML
+		lineageTag: c8050f82-cbb4-565a-9684-cc44a27a1398
+
+	measure 'Header Visao' =
+			"<div class='vx hd' style='height:48px'><div><div class='ov'>VISÃO COMERCIAL</div><div class='tt'>Volume, receita e cobertura num relance</div></div><div class='chips'>"
+			    & [Trilha Filtros HTML] & "</div></div>"
+		displayFolder: 91 HTML
+		lineageTag: d5f03eef-feba-5962-bbab-b83cd7e4a882
+
+	measure 'Header Metas' =
+			"<div class='vx hd' style='height:48px'><div><div class='ov'>METAS · LINHA LEVE</div><div class='tt'>Atingimento, tendência e disciplina de carteira por vendedor</div></div><div class='chips'>"
+			    & [Trilha Filtros HTML] & "</div></div>"
+		displayFolder: 91 HTML
+		lineageTag: aa241ac9-0ad6-506e-80f6-ee4226b51b52
+
+	measure 'Header Carteira' =
+			"<div class='vx hd' style='height:48px'><div><div class='ov'>CARTEIRA E COBERTURA</div><div class='tt'>Quem compra, com que frequência e quem está esfriando</div></div><div class='chips'>"
+			    & [Trilha Filtros HTML] & "</div></div>"
+		displayFolder: 91 HTML
+		lineageTag: 23aa4368-676b-5ac5-93f2-bfc1e4fe536b
+
+	measure 'Header Mercado' =
+			"<div class='vx hd' style='height:48px'><div><div class='ov'>POTENCIAL E SHARE</div><div class='tt'>Quanto do mercado de cada praça já é nosso</div></div><div class='chips'>"
+			    & [Trilha Filtros HTML] & "</div></div>"
+		displayFolder: 91 HTML
+		lineageTag: d766a3b7-cb9b-5a3c-aa42-dcab9569aa12
+
+	measure 'Header SWOT' =
+			"<div class='vx hd' style='height:48px'><div><div class='ov'>SWOT DA CARTEIRA</div><div class='tt'>Porte do cliente × tendência contra o ano anterior</div></div><div class='chips'>"
+			    & [Trilha Filtros HTML] & "</div></div>"
+		displayFolder: 91 HTML
+		lineageTag: 9bd6cbfb-b1ea-5273-8155-79cec31e9f54
+
+	measure 'Header Mix' =
+			"<div class='vx hd' style='height:48px'><div><div class='ov'>MIX DE PRODUTOS</div><div class='tt'>Linhas, famílias e o preço que cada uma sustenta</div></div><div class='chips'>"
+			    & [Trilha Filtros HTML] & "</div></div>"
+		displayFolder: 91 HTML
+		lineageTag: 0ca81601-5d70-5992-a203-58076e7c569a
+
+	measure 'Header Sucata' =
+			"<div class='vx hd' style='height:48px'><div><div class='ov'>SUCATA · ECOCICLO</div><div class='tt'>Cascos devidos, atraso e onde a sucata está parada</div></div><div class='chips'>"
+			    & [Trilha Filtros HTML] & "</div></div>"
+		displayFolder: 91 HTML
+		lineageTag: ba6b5eae-95e9-5495-ba22-5a51b5349d46
+
+	measure 'Drawer Header HTML' =
+			"<div class='vx' style='padding:2px 0'><div class='ov'>PAINEL DE FILTROS</div>"
+			    & "<div class='tt' style='font-size:20px'>Refinar a análise</div>"
+			    & "<div style='margin-top:10px;font-size:11px;color:#9AA6B0'>"
+			    & IF ( [Qtd Filtros Ativos] = 0, "Nenhum filtro ativo", [Qtd Filtros Ativos] & " filtro(s) ativo(s)" )
+			    & "</div><div class='chips' style='justify-content:flex-start;margin-top:8px;max-width:100%'>" & [Trilha Filtros HTML] & "</div></div>"
+		displayFolder: 91 HTML
+		lineageTag: 44c6136f-eabf-5105-ab85-5876e9e6845b
+
+	measure 'KPI Visao' =
+			VAR _vq = [Var % Qtd AA]
+			VAR _vf = [Var % Fat AA]
+			VAR _sh = [Share Potencial]
+			VAR _pp = [Var Share p.p.]
+			VAR _at = [% Atingimento Meta]
+			VAR _td = [% Tendência Meta]
+			RETURN
+			"<div class='vx kb k6' style='height:78px'>" & "<div class='k'><div class='kl'>Quantidade</div><div class='kv'>" & FORMAT ( [Quantidade], "#,0" ) & "<small>un</small>" & "</div><div class='ks'>" & IF ( ISBLANK ( _vq ), "<span class='mut'>sem base no ano anterior</span>", "<span class='" & IF ( _vq >= 0, "up", "dn" ) & "'>" & IF ( _vq >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( _vq ), "0.0%" ) & "</span> vs mesmo período AA" ) & "</div></div>" & "<div class='k'><div class='kl'>Faturamento</div><div class='kv'>" & "R$ " & FORMAT ( [Faturamento] / 1000000, "#,0.0" ) & "<small>mi</small>" & "</div><div class='ks'>" & IF ( ISBLANK ( _vf ), "<span class='mut'>sem base no ano anterior</span>", "<span class='" & IF ( _vf >= 0, "up", "dn" ) & "'>" & IF ( _vf >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( _vf ), "0.0%" ) & "</span> vs mesmo período AA" ) & "</div></div>" & "<div class='k'><div class='kl'>Cobertura</div><div class='kv'>" & FORMAT ( [% Cobertura], "0.0%" ) & "</div><div class='ks'>" & FORMAT ( [Clientes Positivados], "#,0" ) & " de " & FORMAT ( [Carteira Ativa], "#,0" ) & " ativos compraram" & "</div></div>" & "<div class='k'><div class='kl'>Ticket por cliente</div><div class='kv'>" & "R$ " & FORMAT ( [Ticket por Cliente] / 1000, "#,0.0" ) & "<small>mil</small>" & "</div><div class='ks'>" & "preço médio R$ " & FORMAT ( [Preço Médio], "#,0" ) & "/un" & "</div></div>" & "<div class='k'><div class='kl'>Share do potencial</div><div class='kv'>" & IF ( ISBLANK ( _sh ), "—", FORMAT ( _sh, "0.0%" ) ) & "</div><div class='ks'>" & IF ( ISBLANK ( _sh ), "<span class='mut'>potencial é por município</span>", IF ( ISBLANK ( _pp ), "gap de " & FORMAT ( [Gap Potencial] / 1000, "#,0" ) & " mil un", "<span class='" & IF ( _pp >= 0, "up", "dn" ) & "'>" & FORMAT ( _pp, "+0.0;-0.0" ) & " p.p.</span> vs AA" ) ) & "</div></div>" & "<div class='k'><div class='kl'>Meta Linha Leve</div><div class='kv'>" & IF ( ISBLANK ( _at ), "—", FORMAT ( _at, "0%" ) ) & "</div><div class='ks'>" & IF ( ISBLANK ( _at ), "<span class='mut'>meta indisponível neste filtro</span>", "tendência <span class='" & IF ( _td >= 1, "up", IF ( _td >= 0.8, "wa", "dn" ) ) & "'>" & FORMAT ( _td, "0%" ) & "</span>" ) & "</div></div>" & "</div>"
+		displayFolder: 91 HTML
+		lineageTag: a4ed609a-b44d-5990-92e5-eda9b161ee03
+
+	measure 'Insight Visao' =
+			VAR _Corte = [Data Corte]
+			VAR _Parcial = DAY ( _Corte ) < DAY ( EOMONTH ( _Corte, 0 ) )
+			VAR _MesTxt = FORMAT ( _Corte, "mmmm" )
+			VAR _vq = [Var % Qtd AA]
+			VAR _Frase =
+			    "<b>" & FORMAT ( [Quantidade], "#,0" ) & "</b> baterias no período"
+			        & IF ( ISBLANK ( _vq ), "", ", <b>" & FORMAT ( _vq, "+0.0%;-0.0%" ) & "</b> contra o mesmo recorte do ano anterior" )
+			        & ". A Linha Leve responde por <b>" & FORMAT ( [% Linha Leve no Volume], "0%" ) & "</b> do volume."
+			        & IF ( _Parcial, " " & UPPER ( LEFT ( _MesTxt, 1 ) ) & MID ( _MesTxt, 2, 20 ) & " é parcial (" & DAY ( _Corte ) & " de " & DAY ( EOMONTH ( _Corte, 0 ) ) & " dias) e aparece destacado no gráfico.", "" )
+			RETURN
+			    "<div class='vx ins' style='height:48px'><span class='dot'></span><div>" & _Frase & "</div>" & "<span class='src'>Fonte: base comercial VoltEx · corte em " & FORMAT ( [Data Corte], "dd/mm/yyyy" ) & "</span>" & "</div>"
+		displayFolder: 91 HTML
+		lineageTag: ac21ab3d-1de9-583c-ac70-0e343ad549a6
+
+	measure 'KPI Metas' =
+			VAR _at = [% Atingimento Meta]
+			VAR _td = [% Tendência Meta]
+			VAR _vh = CALCULATE ( [Var % Qtd AA], KEEPFILTERS ( Dim_Produto[Familia] = "Linha Leve" ) )
+			RETURN
+			"<div class='vx kb ' style='height:78px'>" & "<div class='k'><div class='kl'>Vendas Linha Leve</div><div class='kv'>" & FORMAT ( [Qtd Linha Leve], "#,0" ) & "<small>un</small>" & "</div><div class='ks'>" & IF ( ISBLANK ( _vh ), "<span class='mut'>sem base no ano anterior</span>", "<span class='" & IF ( _vh >= 0, "up", "dn" ) & "'>" & IF ( _vh >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( _vh ), "0.0%" ) & "</span> vs mesmo período AA" ) & "</div></div>" & "<div class='k'><div class='kl'>Meta Linha Leve</div><div class='kv'>" & IF ( ISBLANK ( [Meta Linha Leve] ), "—", FORMAT ( [Meta Linha Leve], "#,0" ) & "<small>un</small>" ) & "</div><div class='ks'>" & IF ( ISBLANK ( [Meta Linha Leve] ), "<span class='mut'>sem meta neste filtro</span>", "gap de " & FORMAT ( [Gap Meta], "#,0" ) & " un" ) & "</div></div>" & "<div class='k'><div class='kl'>Atingimento</div><div class='kv'>" & IF ( ISBLANK ( _at ), "—", "<span class='" & IF ( _at >= 1, "up", IF ( _at >= 0.8, "", "dn" ) ) & "'>" & FORMAT ( _at, "0.0%" ) & "</span>" ) & "</div><div class='ks'>" & "realizado ÷ meta do período" & "</div></div>" & "<div class='k'><div class='kl'>Tendência</div><div class='kv'>" & IF ( ISBLANK ( _td ), "—", FORMAT ( _td, "0.0%" ) ) & "</div><div class='ks'>" & "mês corrente projetado até o fim" & "</div></div>" & "<div class='k'><div class='kl'>Abaixo de 80%</div><div class='kv'>" & FORMAT ( [Vendedores Abaixo 80%], "0" ) & "<small>de " & FORMAT ( [Vendedores com Meta], "0" ) & "</small>" & "</div><div class='ks'>" & "vendedores" & "</div></div>" & "</div>"
+		displayFolder: 91 HTML
+		lineageTag: feb49135-0b12-52a2-b2de-6d303cbb5c7b
+
+	measure 'Insight Metas' =
+			VAR _T =
+			    FILTER (
+			        ADDCOLUMNS ( VALUES ( Dim_Vendedor[Nome_Vendedor] ), "@at", [% Atingimento Meta] ),
+			        NOT ISBLANK ( [@at] )
+			    )
+			VAR _Pior = TOPN ( 1, _T, [@at], ASC )
+			VAR _Frase =
+			    IF (
+			        ISEMPTY ( _T ),
+			        "Meta Linha Leve indisponível neste filtro: ela existe só no grão vendedor × mês.",
+			        "<b>" & [Vendedores Abaixo 80%] & " de " & [Vendedores com Meta] & "</b> vendedores abaixo de 80% da meta da Linha Leve; o menor atingimento é <b>"
+			            & MAXX ( _Pior, Dim_Vendedor[Nome_Vendedor] ) & "</b> (" & FORMAT ( MAXX ( _Pior, [@at] ), "0%" ) & "). "
+			            & "<b>" & FORMAT ( [% Qtd Fora da UF], "0%" ) & "</b> do volume vai para clientes fora do estado da filial do vendedor: território e filial não se sobrepõem."
+			    )
+			RETURN
+			    "<div class='vx ins' style='height:48px'><span class='dot'></span><div>" & _Frase & "</div>" & "<span class='src'>Fonte: base comercial VoltEx · corte em " & FORMAT ( [Data Corte], "dd/mm/yyyy" ) & "</span>" & "</div>"
+		displayFolder: 91 HTML
+		lineageTag: 905d5f4c-9558-55d4-938f-62783bb67633
+
+	measure 'KPI Carteira' =
+			VAR _cob = [% Cobertura]
+			VAR _aa = [% Cobertura AA]
+			VAR _pp = ( _cob - _aa ) * 100
+			RETURN
+			"<div class='vx kb ' style='height:78px'>" & "<div class='k'><div class='kl'>Carteira ativa</div><div class='kv'>" & FORMAT ( [Carteira Ativa], "#,0" ) & "<small>clientes</small>" & "</div><div class='ks'>" & FORMAT ( [Clientes Sem Compra 90d], "0" ) & " sem compra em 90 dias" & "</div></div>" & "<div class='k'><div class='kl'>Positivados</div><div class='kv'>" & FORMAT ( [Clientes Positivados], "#,0" ) & "</div><div class='ks'>" & "ativos com venda no período" & "</div></div>" & "<div class='k'><div class='kl'>Cobertura</div><div class='kv'>" & FORMAT ( _cob, "0.0%" ) & "</div><div class='ks'>" & IF ( ISBLANK ( _aa ), "<span class='mut'>sem base no ano anterior</span>", "<span class='" & IF ( _pp >= 0, "up", "dn" ) & "'>" & FORMAT ( _pp, "+0.0;-0.0;0.0" ) & " p.p.</span> vs AA" ) & "</div></div>" & "<div class='k'><div class='kl'>Ticket por cliente</div><div class='kv'>" & "R$ " & FORMAT ( [Ticket por Cliente] / 1000, "#,0.0" ) & "<small>mil</small>" & "</div><div class='ks'>" & FORMAT ( DIVIDE ( [Quantidade], [Clientes Compradores] ), "#,0" ) & " un por cliente" & "</div></div>" & "<div class='k'><div class='kl'>Inativos comprando</div><div class='kv'>" & "<span class='" & IF ( [Clientes Não Ativos Comprando] > 0, "wa", "" ) & "'>" & FORMAT ( [Clientes Não Ativos Comprando], "0" ) & "</span><small>clientes</small>" & "</div><div class='ks'>" & FORMAT ( [Qtd Clientes Não Ativos], "#,0" ) & " un para inativo/bloqueado" & "</div></div>" & "</div>"
+		displayFolder: 91 HTML
+		lineageTag: e87d2532-cdf3-5f92-8bf9-a92f76112abd
+
+	measure 'Insight Carteira' =
+			VAR _Seg = TREATAS ( { "Campeões" }, Seg_RFQ[Segmento] )
+			VAR _nC = CALCULATE ( [RFQ Clientes], _Seg )
+			VAR _pC = CALCULATE ( [RFQ % Qtd 12M], _Seg )
+			VAR _nR = CALCULATE ( [RFQ Clientes], TREATAS ( { "Em risco" }, Seg_RFQ[Segmento] ) )
+			VAR _Frase =
+			    "<b>" & _nC & " clientes Campeões</b> compram " & FORMAT ( _pC, "0%" ) & " do volume dos últimos 12 meses"
+			        & IF ( _nR > 0, "; <b>" & _nR & "</b> " & IF ( _nR = 1, "está", "estão" ) & " em risco (sem compra há mais de 60 dias)", "; nenhum cliente em risco" ) & ". "
+			        & IF ( [Clientes Não Ativos Comprando] > 0,
+			            "<b>" & [Clientes Não Ativos Comprando] & " clientes inativos ou bloqueados</b> seguem comprando: revisar cadastro e crédito.",
+			            "Nenhuma venda para cliente inativo ou bloqueado." )
+			RETURN
+			    "<div class='vx ins' style='height:48px'><span class='dot'></span><div>" & _Frase & "</div>" & "<span class='src'>Fonte: base comercial VoltEx · corte em " & FORMAT ( [Data Corte], "dd/mm/yyyy" ) & "</span>" & "</div>"
+		displayFolder: 91 HTML
+		lineageTag: 1c285f53-45d1-5572-8d7a-32a35bc11ca2
+
+	measure 'KPI Mercado' =
+			VAR _sh = [Share Potencial]
+			VAR _pp = [Var Share p.p.]
+			RETURN
+			"<div class='vx kb ' style='height:78px'>" & "<div class='k'><div class='kl'>Potencial do período</div><div class='kv'>" & IF ( ISBLANK ( [Potencial Período] ), "—", FORMAT ( [Potencial Período] / 1000, "#,0.0" ) & "<small>mil</small>" ) & "</div><div class='ks'>" & IF ( ISBLANK ( [Potencial Período] ), "<span class='mut'>limpe vendedor, filial, linha e ramo</span>", FORMAT ( [Meses Equivalentes], "0.0" ) & " meses de mercado" ) & "</div></div>" & "<div class='k'><div class='kl'>Vendido</div><div class='kv'>" & FORMAT ( [Quantidade] / 1000, "#,0.0" ) & "<small>mil</small>" & "</div><div class='ks'>" & "baterias, venda + bonificação" & "</div></div>" & "<div class='k'><div class='kl'>Share</div><div class='kv'>" & IF ( ISBLANK ( _sh ), "—", FORMAT ( _sh, "0.0%" ) ) & "</div><div class='ks'>" & IF ( ISBLANK ( _pp ), "<span class='mut'>sem base no ano anterior</span>", "<span class='" & IF ( _pp >= 0, "up", "dn" ) & "'>" & FORMAT ( _pp, "+0.0;-0.0;0.0" ) & " p.p.</span> vs AA" ) & "</div></div>" & "<div class='k'><div class='kl'>Gap não capturado</div><div class='kv'>" & IF ( ISBLANK ( [Gap Potencial] ), "—", FORMAT ( [Gap Potencial] / 1000, "#,0.0" ) & "<small>mil</small>" ) & "</div><div class='ks'>" & "baterias compradas da concorrência" & "</div></div>" & "<div class='k'><div class='kl'>Prospects contatáveis</div><div class='kv'>" & FORMAT ( [Prospects Contatáveis], "#,0" ) & "</div><div class='ks'>" & FORMAT ( [Prospects Pendentes], "#,0" ) & " pendentes de revisão" & "</div></div>" & "</div>"
+		displayFolder: 91 HTML
+		lineageTag: d2ce31df-0bc0-5571-885d-9cfe9eef3fab
+
+	measure 'Insight Mercado' =
+			VAR _T =
+			    ADDCOLUMNS (
+			        VALUES ( Dim_Municipio[Municipio] ),
+			        "@pot", CALCULATE ( SUM ( Dim_Municipio[Potencial_Baterias_Mes] ) ),
+			        "@sh", [Share Potencial],
+			        "@gap", [Gap Potencial],
+			        "@pr", [Prospects Contatáveis]
+			    )
+			VAR _TotPot = SUMX ( _T, [@pot] )
+			VAR _Big = TOPN ( 1, _T, [@gap], DESC )
+			VAR _Frase =
+			    IF (
+			        ISBLANK ( [Potencial Período] ),
+			        "O potencial é de mercado, por município: com filtro de vendedor, filial, linha ou ramo o share não tem denominador válido.",
+			        "<b>" & MAXX ( _Big, Dim_Municipio[Municipio] ) & "</b> concentra <b>" & FORMAT ( DIVIDE ( MAXX ( _Big, [@pot] ), _TotPot ), "0%" )
+			            & "</b> do potencial com share de <b>" & FORMAT ( MAXX ( _Big, [@sh] ), "0.0%" ) & "</b>: <b>"
+			            & FORMAT ( MAXX ( _Big, [@gap] ) / 1000, "#,0" ) & " mil</b> baterias não capturadas e <b>"
+			            & FORMAT ( MAXX ( _Big, [@pr] ), "#,0" ) & "</b> prospects liberados com telefone na praça."
+			    )
+			RETURN
+			    "<div class='vx ins' style='height:48px'><span class='dot'></span><div>" & _Frase & "</div>" & "<span class='src'>Fonte: base comercial VoltEx · corte em " & FORMAT ( [Data Corte], "dd/mm/yyyy" ) & "</span>" & "</div>"
+		displayFolder: 91 HTML
+		lineageTag: 9174287e-afeb-5c4a-b795-dc3977fe89b1
+
+	measure 'KPI SWOT' = "<div class='vx kb ' style='height:78px'>" & "<div class='k'><div class='kl'><span class='up'>●</span> Fortalezas</div><div class='kv'>" & FORMAT ( CALCULATE ( [SWOT Clientes], TREATAS ( { "Fortalezas" }, Seg_SWOT[Quadrante] ) ), "0" ) & "<small>clientes</small>" & "</div><div class='ks'>" & FORMAT ( CALCULATE ( [SWOT % Qtd], TREATAS ( { "Fortalezas" }, Seg_SWOT[Quadrante] ) ), "0%" ) & " do volume · " & IF ( ISBLANK ( CALCULATE ( [SWOT Var Qtd], TREATAS ( { "Fortalezas" }, Seg_SWOT[Quadrante] ) ) ), "sem AA", FORMAT ( CALCULATE ( [SWOT Var Qtd], TREATAS ( { "Fortalezas" }, Seg_SWOT[Quadrante] ) ), "+0%;-0%" ) & " vs AA" ) & "</div></div>" & "<div class='k'><div class='kl'><span class='wa'>●</span> Atenção</div><div class='kv'>" & FORMAT ( CALCULATE ( [SWOT Clientes], TREATAS ( { "Atenção" }, Seg_SWOT[Quadrante] ) ), "0" ) & "<small>clientes</small>" & "</div><div class='ks'>" & FORMAT ( CALCULATE ( [SWOT % Qtd], TREATAS ( { "Atenção" }, Seg_SWOT[Quadrante] ) ), "0%" ) & " do volume · " & IF ( ISBLANK ( CALCULATE ( [SWOT Var Qtd], TREATAS ( { "Atenção" }, Seg_SWOT[Quadrante] ) ) ), "sem AA", FORMAT ( CALCULATE ( [SWOT Var Qtd], TREATAS ( { "Atenção" }, Seg_SWOT[Quadrante] ) ), "+0%;-0%" ) & " vs AA" ) & "</div></div>" & "<div class='k'><div class='kl'><span class='bl'>●</span> Oportunidades</div><div class='kv'>" & FORMAT ( CALCULATE ( [SWOT Clientes], TREATAS ( { "Oportunidades" }, Seg_SWOT[Quadrante] ) ), "0" ) & "<small>clientes</small>" & "</div><div class='ks'>" & FORMAT ( CALCULATE ( [SWOT % Qtd], TREATAS ( { "Oportunidades" }, Seg_SWOT[Quadrante] ) ), "0%" ) & " do volume · " & IF ( ISBLANK ( CALCULATE ( [SWOT Var Qtd], TREATAS ( { "Oportunidades" }, Seg_SWOT[Quadrante] ) ) ), "sem AA", FORMAT ( CALCULATE ( [SWOT Var Qtd], TREATAS ( { "Oportunidades" }, Seg_SWOT[Quadrante] ) ), "+0%;-0%" ) & " vs AA" ) & "</div></div>" & "<div class='k'><div class='kl'><span class='dn'>●</span> Fraquezas</div><div class='kv'>" & FORMAT ( CALCULATE ( [SWOT Clientes], TREATAS ( { "Fraquezas" }, Seg_SWOT[Quadrante] ) ), "0" ) & "<small>clientes</small>" & "</div><div class='ks'>" & FORMAT ( CALCULATE ( [SWOT % Qtd], TREATAS ( { "Fraquezas" }, Seg_SWOT[Quadrante] ) ), "0%" ) & " do volume · " & IF ( ISBLANK ( CALCULATE ( [SWOT Var Qtd], TREATAS ( { "Fraquezas" }, Seg_SWOT[Quadrante] ) ) ), "sem AA", FORMAT ( CALCULATE ( [SWOT Var Qtd], TREATAS ( { "Fraquezas" }, Seg_SWOT[Quadrante] ) ), "+0%;-0%" ) & " vs AA" ) & "</div></div>" & "<div class='k'><div class='kl'>Linha de corte</div><div class='kv'>" & FORMAT ( [Média Qtd por Cliente], "#,0" ) & "<small>un</small>" & "</div><div class='ks'>" & "média por cliente no período" & "</div></div>" & "</div>"
+		displayFolder: 91 HTML
+		lineageTag: 3573be2d-fb65-5633-b813-a44b5d4aaaa8
+
+	measure 'Insight SWOT' =
+			VAR _A = TREATAS ( { "Atenção" }, Seg_SWOT[Quadrante] )
+			VAR _O = TREATAS ( { "Oportunidades" }, Seg_SWOT[Quadrante] )
+			VAR _Frase =
+			    IF (
+			        ISBLANK ( [Quantidade AA] ),
+			        "Sem base no ano anterior para este recorte: todo cliente aparece como crescendo. Selecione um ano com histórico.",
+			        "<b>" & CALCULATE ( [SWOT Clientes], _A ) & " clientes grandes estão encolhendo</b> (Atenção) e somam <b>"
+			            & FORMAT ( CALCULATE ( [SWOT % Qtd], _A ), "0%" ) & "</b> do volume: é a lista de visita desta semana. "
+			            & CALCULATE ( [SWOT Clientes], _O ) & " clientes pequenos crescendo formam a fila de desenvolvimento."
+			    )
+			RETURN
+			    "<div class='vx ins' style='height:48px'><span class='dot'></span><div>" & _Frase & "</div>" & "<span class='src'>Fonte: base comercial VoltEx · corte em " & FORMAT ( [Data Corte], "dd/mm/yyyy" ) & "</span>" & "</div>"
+		displayFolder: 91 HTML
+		lineageTag: bdd6fc9a-9785-56cb-b6ed-7498773b023b
+
+	measure 'Catalogo Linhas HTML' =
+			VAR _Card =
+			    CONCATENATEX (
+			        VALUES ( Dim_Produto[Linha] ),
+			        VAR _img = CALCULATE ( MAX ( Dim_Produto[Imagem_Linha] ) )
+			        VAR _sh = [% Qtd s/ Total Produto]
+			        VAR _v = [Var % Qtd AA]
+			        RETURN
+			            "<div class='pc'><img src='" & _img & "'/><div><div class='pn'>" & Dim_Produto[Linha] & "</div><div class='pv'>"
+			                & FORMAT ( _sh, "0.0%" ) & "<small>do volume</small></div><div class='ks'>"
+			                & IF ( ISBLANK ( _v ), "R$ " & FORMAT ( [Preço Médio], "#,0" ) & "/un",
+			                    "<span class='" & IF ( _v >= 0, "up", "dn" ) & "'>" & FORMAT ( _v, "+0.0%;-0.0%" ) & "</span> · R$ " & FORMAT ( [Preço Médio], "#,0" ) & "/un" )
+			                & "</div></div></div>",
+			        "",
+			        CALCULATE ( MIN ( Dim_Produto[Ordem_Linha] ) ), ASC
+			    )
+			RETURN "<div class='vx pcs' style='height:76px'>" & _Card & "</div>"
+		displayFolder: 91 HTML
+		lineageTag: 99cb34e4-a942-58fc-8a82-a93a967205d0
+
+	measure 'Insight Mix' =
+			VAR _Tot = CALCULATE ( [Quantidade], ALLSELECTED ( Dim_Produto ) )
+			VAR _TotF = CALCULATE ( [Faturamento], ALLSELECTED ( Dim_Produto ) )
+			VAR _qP = DIVIDE ( CALCULATE ( [Quantidade], Dim_Produto[Linha] IN { "AGM", "EFB" } ), _Tot )
+			VAR _fP = DIVIDE ( CALCULATE ( [Faturamento], Dim_Produto[Linha] IN { "AGM", "EFB" } ), _TotF )
+			VAR _pS = CALCULATE ( [Preço Médio], Dim_Produto[Linha] = "SLI" )
+			VAR _pA = CALCULATE ( [Preço Médio], Dim_Produto[Linha] = "AGM" )
+			VAR _Frase =
+			    "<b>AGM e EFB</b> (start-stop) são <b>" & FORMAT ( _qP, "0%" ) & "</b> do volume e <b>" & FORMAT ( _fP, "0%" )
+			        & "</b> do faturamento. Uma AGM vale <b>" & FORMAT ( DIVIDE ( _pA, _pS ), "0.0" ) & "×</b> uma SLI (R$ "
+			        & FORMAT ( _pA, "#,0" ) & " vs R$ " & FORMAT ( _pS, "#,0" ) & "): cada troca de SLI por AGM no mesmo cliente multiplica o faturamento da venda."
+			RETURN
+			    "<div class='vx ins' style='height:48px'><span class='dot'></span><div>" & _Frase & "</div>" & "<span class='src'>Fonte: base comercial VoltEx · corte em " & FORMAT ( [Data Corte], "dd/mm/yyyy" ) & "</span>" & "</div>"
+		displayFolder: 91 HTML
+		lineageTag: 02d41573-95a2-5385-a706-8e77b6699c34
+
+	measure 'KPI Sucata' =
+			VAR _Corte = [Data Corte]
+			RETURN
+			"<div class='vx kb ' style='height:78px'>" & "<div class='k'><div class='kl'>Sucata em aberto</div><div class='kv'>" & FORMAT ( [Sucata em Aberto kg] / 1000, "#,0.0" ) & "<small>t</small>" & "</div><div class='ks'>" & "posição em " & FORMAT ( _Corte, "dd/mm/yyyy" ) & "</div></div>" & "<div class='k'><div class='kl'>Lançamentos abertos</div><div class='kv'>" & FORMAT ( [Lançamentos em Aberto], "#,0" ) & "</div><div class='ks'>" & FORMAT ( [Clientes com Sucata], "#,0" ) & " clientes devendo casco" & "</div></div>" & "<div class='k'><div class='kl'>Atraso médio</div><div class='kv'>" & FORMAT ( [Atraso Médio Ponderado], "0" ) & "<small>dias</small>" & "</div><div class='ks'>" & "ponderado pelos kg em aberto" & "</div></div>" & "<div class='k'><div class='kl'>Acima de 60 dias</div><div class='kv'>" & "<span class='" & IF ( [% Sucata > 60 dias] > 0.3, "dn", "wa" ) & "'>" & FORMAT ( [% Sucata > 60 dias], "0%" ) & "</span>" & "</div><div class='ks'>" & FORMAT ( [Sucata > 60 dias kg] / 1000, "#,0.0" ) & " t paradas há mais de 60 dias" & "</div></div>" & "<div class='k'><div class='kl'>Troca de casco no ato</div><div class='kv'>" & FORMAT ( [% Vendas com Troca de Casco], "0.0%" ) & "</div><div class='ks'>" & FORMAT ( [Baterias sem Casco], "#,0" ) & " vendidas sem casco no período" & "</div></div>" & "</div>"
+		displayFolder: 91 HTML
+		lineageTag: 95e284fb-ada2-5a16-9584-a85ff5ce49d3
+
+	measure 'Ranking Sucata HTML' =
+			VAR _VendCtx =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Vendedor[ID_Vendedor] ),
+			        TREATAS ( VALUES ( Dim_Filial[ID_Filial] ), Dim_Vendedor[ID_Filial] )
+			    )
+			VAR _T =
+			    CALCULATETABLE (
+			        ADDCOLUMNS (
+			            VALUES ( Dim_Cliente[Cliente_Rotulo] ),
+			            "@kg", CALCULATE ( SUM ( Fato_Sucata[Sucata_Em_Aberto_KG] ) ),
+			            "@d", CALCULATE ( MAX ( Fato_Sucata[Dias_Atraso] ) ),
+			            "@n", CALCULATE ( COUNTROWS ( Fato_Sucata ) )
+			        ),
+			        TREATAS ( _VendCtx, Dim_Cliente[ID_Vendedor] )
+			    )
+			VAR _Top = TOPN ( 7, FILTER ( _T, [@kg] > 0 ), [@kg], DESC, Dim_Cliente[Cliente_Rotulo], ASC )
+			VAR _Max = MAXX ( _Top, [@kg] )
+			VAR _Rows =
+			    CONCATENATEX (
+			        _Top,
+			        "<div class='rk'><div class='rn'>" & Dim_Cliente[Cliente_Rotulo] & "<span>" & [@n] & " lanç. · até " & [@d] & " dias</span></div>"
+			            & "<div class='tr'><i style='width:" & FORMAT ( DIVIDE ( [@kg], _Max ) * 100, "0.0", "en-US" ) & "%;background:"
+			            & IF ( [@d] > 90, "#E5484D", IF ( [@d] > 60, "#F2B84B", "#FF8C00" ) ) & "'></i></div>"
+			            & "<b>" & FORMAT ( [@kg], "#,0" ) & " kg</b></div>",
+			        "", [@kg], DESC, Dim_Cliente[Cliente_Rotulo], ASC
+			    )
+			RETURN
+			    "<div class='vx'><div class='ov' style='color:#9AA6B0'>QUEM MAIS DEVE CASCO</div>"
+			        & "<div class='ks' style='margin:2px 0 10px'>kg em aberto · barra vermelha = mais de 90 dias</div>"
+			        & IF ( ISEMPTY ( _Top ), "<div class='ks'>Nenhuma sucata em aberto neste filtro.</div>", _Rows )
+			        & "<div class='nt'>Fato_Sucata é a posição atual dos cascos devidos: não responde ao filtro de ano.</div></div>"
+		displayFolder: 91 HTML
+		lineageTag: c55788bf-3296-568e-8528-4a553033cff4
+
+	measure 'Insight Sucata' =
+			VAR _VendCtx =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Vendedor[ID_Vendedor] ),
+			        TREATAS ( VALUES ( Dim_Filial[ID_Filial] ), Dim_Vendedor[ID_Filial] )
+			    )
+			VAR _T =
+			    CALCULATETABLE (
+			        ADDCOLUMNS ( VALUES ( Dim_Municipio[Municipio] ), "@kg", CALCULATE ( SUM ( Fato_Sucata[Sucata_Em_Aberto_KG] ) ) ),
+			        TREATAS ( _VendCtx, Dim_Cliente[ID_Vendedor] )
+			    )
+			VAR _Top = TOPN ( 1, _T, [@kg], DESC )
+			VAR _Frase =
+			    "<b>" & FORMAT ( [Sucata em Aberto kg] / 1000, "#,0.0" ) & " t</b> de sucata em aberto, <b>"
+			        & FORMAT ( [% Sucata > 60 dias], "0%" ) & "</b> com mais de 60 dias. <b>" & MAXX ( _Top, Dim_Municipio[Municipio] )
+			        & "</b> concentra " & FORMAT ( DIVIDE ( MAXX ( _Top, [@kg] ), SUMX ( _T, [@kg] ) ), "0%" )
+			        & ". Para o EcoCiclo, cada bateria vendida sem casco no ato vira débito a cobrar: <b>"
+			        & FORMAT ( 1 - [% Vendas com Troca de Casco], "0%" ) & "</b> das vendas do período."
+			RETURN
+			    "<div class='vx ins' style='height:48px'><span class='dot'></span><div>" & _Frase & "</div>" & "<span class='src'>Fonte: base comercial VoltEx · corte em " & FORMAT ( [Data Corte], "dd/mm/yyyy" ) & "</span>" & "</div>"
+		displayFolder: 91 HTML
+		lineageTag: c3013430-62b0-5077-8495-7c003fa11186
+
+	measure 'TT Mes HTML' =
+			VAR _mes = FORMAT ( MAX ( Dim_Calendario[Inicio_Mes] ), "mmmm/yyyy" )
+			VAR _Tot = [Quantidade]
+			VAR _v = [Var % Qtd AA]
+			VAR _parc = SELECTEDVALUE ( Dim_Calendario[Status_Mes] ) = "Parcial"
+			VAR _Bar = "<div class='tb'><span>"
+			VAR _Lin =
+			    CONCATENATEX (
+			        VALUES ( Dim_Produto[Linha] ),
+			        VAR _s = DIVIDE ( [Quantidade], _Tot )
+			        RETURN _Bar & Dim_Produto[Linha] & "</span><div class='tr'><i style='width:" & FORMAT ( _s * 100, "0.0", "en-US" )
+			            & "%'></i></div><b>" & FORMAT ( _s, "0%" ) & "</b></div>",
+			        "", CALCULATE ( MIN ( Dim_Produto[Ordem_Linha] ) ), ASC
+			    )
+			RETURN
+			    "<div class='vx tt2'><div class='ov'>" & UPPER ( _mes ) & IF ( _parc, " · PARCIAL", "" ) & "</div>"
+			        & "<div class='kv' style='font-size:24px'>" & FORMAT ( _Tot, "#,0" ) & "<small>baterias</small></div>"
+			        & "<div class='ks'>" & IF ( ISBLANK ( _v ), "sem base no ano anterior", "<span class='" & IF ( _v >= 0, "up", "dn" ) & "'>"
+			            & IF ( _v >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( _v ), "0.0%" ) & "</span> vs mesmo mês do ano anterior" ) & "</div>"
+			        & "<div class='ov' style='color:#9AA6B0;margin-top:12px'>MIX POR LINHA</div>" & _Lin
+			        & "<div class='tf'><div>Cobertura <b>" & FORMAT ( [% Cobertura], "0.0%" ) & "</b></div><div>Faturamento <b>"
+			        & FORMAT ( [Faturamento] / 1000000, "#,0.00" ) & " mi</b></div><div>Linha Leve <b>" & FORMAT ( [% Linha Leve no Volume], "0%" ) & "</b></div></div></div>"
+		displayFolder: 91 HTML
+		lineageTag: 18ad9853-bdaf-5a92-a743-e329f2504c6d
+
+	measure 'TT Vendedor HTML' =
+			VAR _nm = SELECTEDVALUE ( Dim_Vendedor[Nome_Vendedor], "Vários vendedores" )
+			VAR _ini = IF ( HASONEVALUE ( Dim_Vendedor[Nome_Vendedor] ), "V" & SUBSTITUTE ( _nm, "Vendedor ", "" ), "··" )
+			VAR _rota = SELECTEDVALUE ( Dim_Vendedor[Area_Rota], "—" )
+			VAR _fil = SELECTEDVALUE ( Dim_Vendedor[Filial_Vendedor], "—" )
+			VAR _at = [% Atingimento Meta]
+			VAR _td = [% Tendência Meta]
+			VAR _w = MIN ( COALESCE ( _at, 0 ), 1.5 ) / 1.5 * 100
+			RETURN
+			    "<div class='vx tt2'><div style='display:flex;gap:12px;align-items:center'><div class='av'>" & _ini & "</div><div><div class='pn' style='font-size:15px'>"
+			        & _nm & "</div><div class='ks'>" & _rota & " · " & _fil & "</div></div></div>"
+			        & "<div class='tf' style='margin-top:12px'><div>Linha Leve<br><b>" & FORMAT ( [Qtd Linha Leve], "#,0" ) & "</b></div><div>Meta<br><b>"
+			        & IF ( ISBLANK ( [Meta Linha Leve] ), "—", FORMAT ( [Meta Linha Leve], "#,0" ) ) & "</b></div><div>Cobertura<br><b>"
+			        & FORMAT ( [% Cobertura], "0%" ) & "</b></div></div>"
+			        & "<div class='ov' style='color:#9AA6B0;margin-top:12px'>ATINGIMENTO · TENDÊNCIA " & FORMAT ( _td, "0%" ) & "</div>"
+			        & "<div class='tr' style='height:8px;margin-top:6px'><i style='width:" & FORMAT ( _w, "0.0", "en-US" ) & "%;background:"
+			        & IF ( _at < 0.8, "#E5484D", "#FF8C00" ) & "'></i></div><div class='ks' style='margin-top:4px'>" & FORMAT ( _at, "0%" )
+			        & " · carteira " & FORMAT ( [Carteira Ativa], "0" ) & " ativos · " & FORMAT ( [% Qtd Fora da UF], "0%" ) & " fora da UF da filial</div></div>"
+		displayFolder: 91 HTML
+		lineageTag: 2d70e32e-ecb1-5b8f-a67e-fd536a7ad633
+
+	measure 'TT Produto HTML' =
+			VAR _one = HASONEVALUE ( Dim_Produto[ID_Produto] )
+			VAR _img = IF ( _one, SELECTEDVALUE ( Dim_Produto[Imagem_Base64] ), CALCULATE ( MAX ( Dim_Produto[Imagem_Linha] ) ) )
+			VAR _nm =
+			    IF ( _one, SELECTEDVALUE ( Dim_Produto[Produto] ),
+			        IF ( HASONEVALUE ( Dim_Produto[Linha] ), "Linha " & SELECTEDVALUE ( Dim_Produto[Linha] ), "Vários produtos" ) )
+			VAR _sub =
+			    IF ( _one, SELECTEDVALUE ( Dim_Produto[Codigo_Original] ) & " · " & SELECTEDVALUE ( Dim_Produto[Familia] ),
+			        CONCATENATEX ( VALUES ( Dim_Produto[Familia] ), Dim_Produto[Familia], ", " ) )
+			VAR _v = [Var % Qtd AA]
+			VAR _of =
+			    CONCATENATEX (
+			        VALUES ( Dim_Produto[ID_Produto_Oficial] ),
+			        LOOKUPVALUE ( Dim_Catalogo[Produto_Oficial], Dim_Catalogo[ID_Produto_Oficial], Dim_Produto[ID_Produto_Oficial] ),
+			        " · "
+			    )
+			RETURN
+			    "<div class='vx tt2'><div style='display:flex;gap:12px;align-items:center'>"
+			        & IF ( ISBLANK ( _img ), "", "<img class='timg' src='" & _img & "'/>" )
+			        & "<div><div class='ov'>" & UPPER ( CONCATENATEX ( VALUES ( Dim_Produto[Linha] ), Dim_Produto[Linha], " · " ) ) & "</div><div class='pn' style='font-size:15px'>" & _nm & "</div>"
+			        & "<div class='ks'>" & _sub & "</div></div></div>"
+			        & "<div class='tf' style='margin-top:10px'><div>Quantidade<br><b>" & FORMAT ( [Quantidade], "#,0" ) & "</b></div><div>Faturamento<br><b>"
+			        & FORMAT ( [Faturamento] / 1000000, "#,0.00" ) & " mi</b></div><div>Preço médio<br><b>R$ " & FORMAT ( [Preço Médio], "#,0" ) & "</b></div></div>"
+			        & "<div class='tf'><div>vs AA<br><b class='" & IF ( _v < 0, "dn", "up" ) & "'>" & IF ( ISBLANK ( _v ), "—", FORMAT ( _v, "+0.0%;-0.0%" ) ) & "</b></div><div>Garantia<br><b>"
+			        & FORMAT ( [% Garantia s/ Venda], "0.0%" ) & "</b></div><div>Sem casco<br><b>" & FORMAT ( 1 - [% Vendas com Troca de Casco], "0%" ) & "</b></div></div>"
+			        & "<div class='nt' style='margin-top:8px'>Catálogo oficial: " & _of & "</div></div>"
+		displayFolder: 91 HTML
+		lineageTag: 1fcf1e81-39b2-5861-8896-4edc6f09a67f
+
+	measure 'Capa HTML' =
+			VAR _Fil = CONCATENATEX ( VALUES ( Dim_Filial[Filial_Curta] ), "<div>" & Dim_Filial[Filial_Curta] & "</div>", "", Dim_Filial[Filial_Curta], ASC )
+			RETURN
+			    "<div class='vx'><div class='cv-ov'>VOLTEX BATERIAS · PERFORMANCE COMERCIAL</div>"
+			        & "<div class='cv-t'>Vendas, carteira<br>e mercado em <span>um só fluxo</span></div>"
+			        & "<div class='cv-s'>Metas da Linha Leve, cobertura de carteira, share sobre o potencial de cada praça, SWOT de clientes e sucata do EcoCiclo. "
+			        & FORMAT ( [Itens de Nota], "#,0" ) & " itens de nota até " & FORMAT ( [Data Corte], "dd/mm/yyyy" ) & ".</div>"
+			        & "<div class='cv-l'>" & _Fil & "<div>" & FORMAT ( [Carteira Ativa], "0" ) & " clientes ativos</div><div>"
+			        & COUNTROWS ( Dim_Municipio ) & " praças</div></div></div>"
+		displayFolder: 91 HTML
+		lineageTag: 94835189-a0f5-55ea-8f4c-f7b489d5dc2d
+
+	measure 'Qtd Linha Leve' = CALCULATE ( [Quantidade], KEEPFILTERS ( Dim_Produto[Familia] = "Linha Leve" ) )
+		formatString: #,0
+		displayFolder: 02 Metas
+		lineageTag: 4e6c665d-d533-5996-b4fc-366dae378858
+
+	measure '% Linha Leve no Volume' = DIVIDE ( [Qtd Linha Leve], [Quantidade] )
+		formatString: 0.0%
+		displayFolder: 02 Metas
+		lineageTag: 7d26e4eb-f7e5-5063-99e2-dcbf6ed1a42d
+
+	measure 'Meta Linha Leve' =
+			-- Meta mora no grão vendedor × mês, só para a Linha Leve (40–72Ah).
+			-- Fica em branco com filtro fora desse grão (produto, cliente, município) ou abaixo do mês.
+			VAR _ForaDoGrao =
+			    ISFILTERED ( Dim_Produto ) || ISFILTERED ( Dim_Cliente ) || ISFILTERED ( Dim_Municipio )
+			VAR _AbaixoDoMes = ISINSCOPE ( Dim_Calendario[Data] )
+			VAR _Meses = VALUES ( Dim_Calendario[Inicio_Mes] )
+			VAR _VendCtx =
+			    CALCULATETABLE (
+			        VALUES ( Dim_Vendedor[ID_Vendedor] ),
+			        TREATAS ( VALUES ( Dim_Filial[ID_Filial] ), Dim_Vendedor[ID_Filial] )
+			    )
+			RETURN
+			    IF (
+			        NOT _ForaDoGrao && NOT _AbaixoDoMes,
+			        CALCULATE (
+			            SUM ( Fato_Metas[Meta_Quantidade] ),
+			            REMOVEFILTERS ( Dim_Calendario ),
+			            TREATAS ( _Meses, Fato_Metas[Data_Mes] ),
+			            TREATAS ( _VendCtx, Fato_Metas[ID_Vendedor] )
+			        )
+			    )
+		formatString: #,0
+		displayFolder: 02 Metas
+		lineageTag: c06a2925-a512-5e17-935b-1621ddd0e2b9
+
+	measure '% Atingimento Meta' = DIVIDE ( [Qtd Linha Leve], [Meta Linha Leve] )
+		formatString: 0.0%
+		displayFolder: 02 Metas
+		lineageTag: 303b38c7-0af8-5812-8f64-c9407451d74a
+
+	measure 'Gap Meta' =
+			VAR _g = [Meta Linha Leve] - [Qtd Linha Leve]
+			RETURN IF ( NOT ISBLANK ( [Meta Linha Leve] ), MAX ( _g, 0 ) )
+		formatString: #,0
+		displayFolder: 02 Metas
+		lineageTag: f0219cc7-cd61-5232-92b0-dc19be0faf95
+
+	measure 'Projeção Linha Leve' =
+			-- Realizado + extrapolação linear do mês corrente (parcial) até o fim do mês
+			VAR _Corte = [Data Corte]
+			VAR _IniMes = DATE ( YEAR ( _Corte ), MONTH ( _Corte ), 1 )
+			VAR _Fator = DIVIDE ( DAY ( EOMONTH ( _Corte, 0 ) ), DAY ( _Corte ) ) - 1
+			VAR _MesAtual =
+			    CALCULATE ( [Qtd Linha Leve], KEEPFILTERS ( Dim_Calendario[Inicio_Mes] = _IniMes ) )
+			RETURN
+			    IF ( NOT ISBLANK ( [Qtd Linha Leve] ), [Qtd Linha Leve] + COALESCE ( _MesAtual, 0 ) * _Fator )
+		formatString: #,0
+		displayFolder: 02 Metas
+		lineageTag: dcb06637-d736-5fa5-be69-b97db46e6815
+
+	measure '% Tendência Meta' = DIVIDE ( [Projeção Linha Leve], [Meta Linha Leve] )
+		formatString: 0.0%
+		displayFolder: 02 Metas
+		lineageTag: b40bc90d-45d9-585c-9af2-33db90f9da32
+
+	column Coluna
+		dataType: string
+		isHidden
+		lineageTag: 08fe6b92-715a-5960-b3ce-a42d3daf6cf8
+		summarizeBy: none
+		sourceColumn: Coluna
+
+		annotation SummarizationSetBy = Automatic
+
+	partition _Medidas = m
+		mode: import
+		source =
+				let
+				    Resultado = #table ( type table [Coluna = text], {} )
+				in
+				    Resultado
+
+	annotation PBI_ResultType = Table
+

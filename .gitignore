@@ -1,0 +1,5 @@
+# Power BI: cache e configurações locais
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+# Pacotes gerados durante o build
+*.tgz

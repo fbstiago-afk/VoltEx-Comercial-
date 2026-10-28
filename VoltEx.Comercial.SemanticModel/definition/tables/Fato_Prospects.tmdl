@@ -1,0 +1,76 @@
+table Fato_Prospects
+	lineageTag: 82a39967-8ed8-51cd-87c0-39e43aa1659e
+
+	column CNPJ_Prospect
+		dataType: string
+		isHidden
+		lineageTag: 6621790c-54db-5a31-b392-8ef40306a058
+		summarizeBy: none
+		sourceColumn: CNPJ_Prospect
+
+		annotation SummarizationSetBy = Automatic
+
+	column Razao_Social_Prospect
+		dataType: string
+		lineageTag: addc678b-be7a-523b-8e60-4e043f1eb02b
+		summarizeBy: none
+		sourceColumn: Razao_Social_Prospect
+
+		annotation SummarizationSetBy = Automatic
+
+	column Cod_IBGE
+		dataType: int64
+		isHidden
+		lineageTag: 1054425b-6e06-51bc-b179-e1b2cfc63145
+		summarizeBy: none
+		sourceColumn: Cod_IBGE
+
+		annotation SummarizationSetBy = Automatic
+
+	column Status_Prospect
+		dataType: string
+		lineageTag: db720a80-364c-585c-9381-4970cbaad428
+		summarizeBy: none
+		sourceColumn: Status_Prospect
+		sortByColumn: Ordem_Status
+
+		annotation SummarizationSetBy = Automatic
+
+	column Ordem_Status
+		dataType: int64
+		isHidden
+		lineageTag: 0f6b731d-416f-5309-a913-162834997dd0
+		summarizeBy: none
+		sourceColumn: Ordem_Status
+
+		annotation SummarizationSetBy = Automatic
+
+	column Possui_Telefone
+		dataType: string
+		lineageTag: 61f0d5f3-e93c-557c-b48a-61305cb8631e
+		summarizeBy: none
+		sourceColumn: Possui_Telefone
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Fato_Prospects = m
+		mode: import
+		source =
+				let
+				    Fonte = Excel.Workbook ( File.Contents ( CaminhoBaseCom ), null, true ),
+				    Planilha = Fonte{[Item = "Base_Mercado_Prospects", Kind = "Sheet"]}[Data],
+				    Cabecalho = Table.PromoteHeaders ( Planilha, [PromoteAllScalars = true] ),
+				    Tipos = Table.TransformColumnTypes ( Cabecalho, {
+				        {"CNPJ_Prospect", type text},
+				        {"Razao_Social_Prospect", type text},
+				        {"Cod_IBGE", Int64.Type},
+				        {"Status_Prospect", type text},
+				        {"Possui_Telefone", type text}
+				    } ),
+				    Resultado = Table.AddColumn ( Tipos, "Ordem_Status", each
+				        List.PositionOf ( { "Liberado", "Pendente Revisão", "Já é Cliente" }, [Status_Prospect] ) + 1, Int64.Type )
+				in
+				    Resultado
+
+	annotation PBI_ResultType = Table
+

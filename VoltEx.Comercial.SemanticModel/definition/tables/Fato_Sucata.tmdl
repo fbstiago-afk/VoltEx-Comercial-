@@ -1,0 +1,119 @@
+table Fato_Sucata
+	lineageTag: 94335021-2bf5-5237-a4d1-6d9473d3b1ee
+
+	column ID_Lancamento
+		dataType: int64
+		isHidden
+		lineageTag: 16b041a1-ab79-5dd7-a6be-f611828d1fa1
+		summarizeBy: none
+		sourceColumn: ID_Lancamento
+
+		annotation SummarizationSetBy = Automatic
+
+	column Data_Emissao_Origem
+		dataType: dateTime
+		isHidden
+		formatString: dd/mm/yyyy
+		lineageTag: 02529307-7ab9-5fdd-8c31-cac9cc704781
+		summarizeBy: none
+		sourceColumn: Data_Emissao_Origem
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ID_Cliente
+		dataType: int64
+		isHidden
+		lineageTag: 571493a6-3d9e-5dfd-9d44-b3d141d3fdfd
+		summarizeBy: none
+		sourceColumn: ID_Cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column Sucata_Devida_KG
+		dataType: double
+		isHidden
+		formatString: #,0
+		lineageTag: a77b1971-1424-58fd-b21b-9d4880f14bef
+		summarizeBy: none
+		sourceColumn: Sucata_Devida_KG
+
+		annotation SummarizationSetBy = Automatic
+
+	column Sucata_Entregue_KG
+		dataType: double
+		isHidden
+		formatString: #,0
+		lineageTag: 24016c5c-d585-5c88-a6c3-02a1dbdc86aa
+		summarizeBy: none
+		sourceColumn: Sucata_Entregue_KG
+
+		annotation SummarizationSetBy = Automatic
+
+	column Sucata_Em_Aberto_KG
+		dataType: double
+		isHidden
+		formatString: #,0
+		lineageTag: c20c4b2b-4b2e-5b21-b69f-37a84f68fb75
+		summarizeBy: none
+		sourceColumn: Sucata_Em_Aberto_KG
+
+		annotation SummarizationSetBy = Automatic
+
+	column Dias_Atraso
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 9e887401-f709-5f12-9278-d29b20cddfd7
+		summarizeBy: none
+		sourceColumn: Dias_Atraso
+
+		annotation SummarizationSetBy = Automatic
+
+	column Faixa_Atraso
+		dataType: string
+		lineageTag: f95509a1-2564-50ce-abfb-61b53c32a754
+		summarizeBy: none
+		sourceColumn: Faixa_Atraso
+		sortByColumn: Ordem_Faixa
+
+		annotation SummarizationSetBy = Automatic
+
+	column Ordem_Faixa
+		dataType: int64
+		isHidden
+		lineageTag: c39c73cc-2e21-5517-b382-52cbc08fa4d1
+		summarizeBy: none
+		sourceColumn: Ordem_Faixa
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Fato_Sucata = m
+		mode: import
+		source =
+				let
+				    Fonte = Excel.Workbook ( File.Contents ( CaminhoBaseCom ), null, true ),
+				    Planilha = Fonte{[Item = "Fato_Sucata", Kind = "Sheet"]}[Data],
+				    Cabecalho = Table.PromoteHeaders ( Planilha, [PromoteAllScalars = true] ),
+				    Tipos = Table.TransformColumnTypes ( Cabecalho, {
+				        {"ID_Lancamento", Int64.Type},
+				        {"Data_Emissao_Origem", type date},
+				        {"ID_Cliente", Int64.Type},
+				        {"Sucata_Devida_KG", type number},
+				        {"Sucata_Entregue_KG", type number},
+				        {"Sucata_Em_Aberto_KG", type number}
+				    } ),
+				    // Dias_Atraso da origem foi congelado na data em que o Excel foi gerado: recalculado aqui
+				    SemDias = Table.RemoveColumns ( Tipos, { "Dias_Atraso" }, MissingField.Ignore ),
+				    AteCorte = Table.SelectRows ( SemDias, each [Data_Emissao_Origem] <= DataCorte and [Sucata_Em_Aberto_KG] > 0 ),
+				    Dias = Table.AddColumn ( AteCorte, "Dias_Atraso", each Duration.Days ( DataCorte - [Data_Emissao_Origem] ), Int64.Type ),
+				    Ordem = Table.AddColumn ( Dias, "Ordem_Faixa", each
+				        if [Dias_Atraso] <= 30 then 1 else if [Dias_Atraso] <= 60 then 2 else if [Dias_Atraso] <= 90 then 3 else 4, Int64.Type ),
+				    Resultado = Table.AddColumn ( Ordem, "Faixa_Atraso", each
+				        { "0–30 dias", "31–60 dias", "61–90 dias", "90+ dias" }{[Ordem_Faixa] - 1}, type text )
+				in
+				    Resultado
+
+	annotation PBI_ResultType = Table
+

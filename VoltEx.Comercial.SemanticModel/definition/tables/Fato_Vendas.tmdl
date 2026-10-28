@@ -1,0 +1,158 @@
+table Fato_Vendas
+	lineageTag: df8da85f-4294-57b9-bf29-b4fb3a23b673
+
+	column ID_Nota_Item
+		dataType: int64
+		isHidden
+		lineageTag: 474f7bd0-bbe5-5f70-b6b3-79870367bb9b
+		summarizeBy: none
+		sourceColumn: ID_Nota_Item
+
+		annotation SummarizationSetBy = Automatic
+
+	column Numero_Nota
+		dataType: int64
+		isHidden
+		lineageTag: ad49f2c7-78ce-5854-a8ff-74540b0abbc1
+		summarizeBy: none
+		sourceColumn: Numero_Nota
+
+		annotation SummarizationSetBy = Automatic
+
+	column Data_Emissao
+		dataType: dateTime
+		isHidden
+		formatString: dd/mm/yyyy
+		lineageTag: be0422ac-6fee-5f15-a148-1c39f96dc5bf
+		summarizeBy: none
+		sourceColumn: Data_Emissao
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Mes_Ref
+		dataType: dateTime
+		isHidden
+		formatString: mmm/yy
+		lineageTag: c94c1557-b770-5d93-8bab-724dda094bc2
+		summarizeBy: none
+		sourceColumn: Mes_Ref
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ID_Cliente
+		dataType: int64
+		isHidden
+		lineageTag: d8a0ebf8-c64d-59eb-ad07-ba3563127592
+		summarizeBy: none
+		sourceColumn: ID_Cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_Produto
+		dataType: int64
+		isHidden
+		lineageTag: c3459e41-d7e4-5f69-b991-2da8ab88130c
+		summarizeBy: none
+		sourceColumn: ID_Produto
+
+		annotation SummarizationSetBy = Automatic
+
+	column Tipo_Operacao
+		dataType: string
+		isHidden
+		lineageTag: 4a02b80d-22f9-51bb-89e2-e1e9ff210ef0
+		summarizeBy: none
+		sourceColumn: Tipo_Operacao
+
+		annotation SummarizationSetBy = Automatic
+
+	column Com_Troca_Casco
+		dataType: string
+		isHidden
+		lineageTag: 010b34b4-234e-5381-b161-28c3c6415b4e
+		summarizeBy: none
+		sourceColumn: Com_Troca_Casco
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quantidade
+		dataType: int64
+		isHidden
+		formatString: #,0
+		lineageTag: 36716ab7-2ac1-5ee3-bd35-2162bfe85256
+		summarizeBy: none
+		sourceColumn: Quantidade
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_Vendedor
+		dataType: int64
+		isHidden
+		lineageTag: b0365338-c615-5b8c-ac8d-88049fc0d365
+		summarizeBy: none
+		sourceColumn: ID_Vendedor
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_Filial
+		dataType: int64
+		isHidden
+		lineageTag: daf72314-0ee3-5fff-b035-58c17977aae8
+		summarizeBy: none
+		sourceColumn: ID_Filial
+
+		annotation SummarizationSetBy = Automatic
+
+	column Valor_Unitario
+		dataType: double
+		isHidden
+		formatString: R$ #,0.00
+		lineageTag: 28435deb-0d84-5798-92da-ed5107dcbe0c
+		summarizeBy: none
+		sourceColumn: Valor_Unitario
+
+		annotation SummarizationSetBy = Automatic
+
+	column Faturamento_RS
+		dataType: double
+		isHidden
+		formatString: R$ #,0.00
+		lineageTag: f8002878-9f8c-52ff-ac3b-a7d183d9ded7
+		summarizeBy: none
+		sourceColumn: Faturamento_RS
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Fato_Vendas = m
+		mode: import
+		source =
+				let
+				    Fonte = Excel.Workbook ( File.Contents ( CaminhoBaseCom ), null, true ),
+				    Planilha = Fonte{[Item = "Fato_Vendas", Kind = "Sheet"]}[Data],
+				    Cabecalho = Table.PromoteHeaders ( Planilha, [PromoteAllScalars = true] ),
+				    Tipos = Table.TransformColumnTypes ( Cabecalho, {
+				        {"ID_Nota_Item", Int64.Type},
+				        {"Numero_Nota", Int64.Type},
+				        {"Data_Emissao", type date},
+				        {"ID_Cliente", Int64.Type},
+				        {"ID_Produto", Int64.Type},
+				        {"Tipo_Operacao", type text},
+				        {"Com_Troca_Casco", type text},
+				        {"Quantidade", Int64.Type},
+				        {"ID_Vendedor", Int64.Type},
+				        {"ID_Filial", Int64.Type},
+				        {"Valor_Unitario", type number},
+				        {"Faturamento_RS", type number}
+				    } ),
+				    // Corta lançamentos com data futura (a base vai até 31/12/2026)
+				    AteCorte = Table.SelectRows ( Tipos, each [Data_Emissao] <= DataCorte ),
+				    Resultado = Table.AddColumn ( AteCorte, "Mes_Ref", each Date.StartOfMonth ( [Data_Emissao] ), type date )
+				in
+				    Resultado
+
+	annotation PBI_ResultType = Table
+

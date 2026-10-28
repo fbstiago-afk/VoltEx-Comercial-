@@ -1,0 +1,44 @@
+relationship 240350f7-fcab-5d66-83a7-53c9fb52744f
+	fromColumn: Fato_Vendas.Data_Emissao
+	toColumn: Dim_Calendario.Data
+
+relationship 6e2582de-52d5-5baf-94ef-d610b915a430
+	fromColumn: Fato_Metas.Data_Mes
+	toColumn: Dim_Calendario.Data
+
+relationship f997db6e-27da-55ff-bc63-30e7b12c907e
+	fromColumn: Fato_Vendas.ID_Produto
+	toColumn: Dim_Produto.ID_Produto
+
+relationship 5074eb02-d10b-5328-80be-30d7eb588bd4
+	fromColumn: Fato_Vendas.ID_Cliente
+	toColumn: Dim_Cliente.ID_Cliente
+
+relationship f5187c68-ba24-5528-96aa-67eda9cc6958
+	fromColumn: Fato_Vendas.ID_Vendedor
+	toColumn: Dim_Vendedor.ID_Vendedor
+
+relationship 5f904be4-72c6-5288-b36e-5b095f907453
+	fromColumn: Fato_Vendas.ID_Filial
+	toColumn: Dim_Filial.ID_Filial
+
+relationship 78c45ffa-0739-526e-907d-ec8c58f70b3a
+	fromColumn: Fato_Metas.ID_Vendedor
+	toColumn: Dim_Vendedor.ID_Vendedor
+
+relationship 09a894e2-e427-5857-91c4-f26bc6e641a8
+	fromColumn: Dim_Cliente.Cod_IBGE
+	toColumn: Dim_Municipio.Cod_IBGE
+
+relationship 328f9369-59a1-5fe2-a882-5f41af935ae1
+	fromColumn: Fato_Sucata.ID_Cliente
+	toColumn: Dim_Cliente.ID_Cliente
+
+relationship e29cc9cc-c529-58e4-838d-e72517172a97
+	fromColumn: Fato_Prospects.Cod_IBGE
+	toColumn: Dim_Municipio.Cod_IBGE
+
+relationship b21774a1-cca5-5403-bc9b-8bc8f5f7590f
+	fromColumn: Dim_Produto.ID_Produto_Oficial
+	toColumn: Dim_Catalogo.ID_Produto_Oficial
+

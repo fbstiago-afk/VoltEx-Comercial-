@@ -1,0 +1,49 @@
+table Seg_RFQ
+	lineageTag: 523d4363-56dd-5249-9dbb-9b1523a3f3e5
+
+	column Ordem
+		dataType: int64
+		isHidden
+		lineageTag: b99a0eec-87e8-5cf6-8b28-527ffdff0c71
+		summarizeBy: none
+		sourceColumn: Ordem
+
+		annotation SummarizationSetBy = Automatic
+
+	column Segmento
+		dataType: string
+		lineageTag: f82efc07-9fb8-5aea-a8d1-88e2f47b64aa
+		summarizeBy: none
+		sourceColumn: Segmento
+		sortByColumn: Ordem
+
+		annotation SummarizationSetBy = Automatic
+
+	column Regra
+		dataType: string
+		lineageTag: 87e33dc2-54c4-5ab1-b4e7-c08fe23194ef
+		summarizeBy: none
+		sourceColumn: Regra
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Seg_RFQ = m
+		mode: import
+		source =
+				let
+				    // Segmentos RFQ (Recência, Frequência, Quantidade 12M). A regra mora na medida RFQ.
+				    Resultado = #table (
+				        type table [Ordem = Int64.Type, Segmento = text, Regra = text],
+				        {
+				            { 1, "Campeões", "10+ meses comprando e volume ≥ 1,2× a média" },
+				            { 2, "Leais", "8+ meses comprando e volume ≥ 0,8× a média" },
+				            { 3, "Ocasionais", "compra recente, frequência ou volume baixos" },
+				            { 4, "Em risco", "sem compra há mais de 60 dias" },
+				            { 5, "Sem compra 12M", "nenhuma compra nos últimos 12 meses" }
+				        }
+				    )
+				in
+				    Resultado
+
+	annotation PBI_ResultType = Table
+

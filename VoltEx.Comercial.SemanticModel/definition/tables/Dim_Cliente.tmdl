@@ -1,0 +1,116 @@
+table Dim_Cliente
+	lineageTag: d75bd233-a34e-575e-ab4e-c26b8270d537
+
+	column ID_Cliente
+		dataType: int64
+		isHidden
+		lineageTag: f32cdd0f-ce57-53df-978b-e4a4c4ab278d
+		summarizeBy: none
+		sourceColumn: ID_Cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column CNPJ
+		dataType: string
+		lineageTag: bcf1159f-6f39-57b6-aa79-99fece29c9b5
+		summarizeBy: none
+		sourceColumn: CNPJ
+
+		annotation SummarizationSetBy = Automatic
+
+	column Razao_Social
+		dataType: string
+		lineageTag: 7c9da3ab-3c7f-53c6-999c-81cadb91ba71
+		summarizeBy: none
+		sourceColumn: Razao_Social
+
+		annotation SummarizationSetBy = Automatic
+
+	column Nome_Fantasia
+		dataType: string
+		lineageTag: c532bad9-e616-529e-a4ab-94c058ffb23e
+		summarizeBy: none
+		sourceColumn: Nome_Fantasia
+
+		annotation SummarizationSetBy = Automatic
+
+	column Cliente_Rotulo
+		dataType: string
+		lineageTag: 8f78f729-0502-572e-8abb-c502fb804505
+		summarizeBy: none
+		sourceColumn: Cliente_Rotulo
+		sortByColumn: ID_Cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column Ramo_Atividade
+		dataType: string
+		lineageTag: 12466a34-cbfb-50ac-b7f3-4067e89f8a41
+		summarizeBy: none
+		sourceColumn: Ramo_Atividade
+
+		annotation SummarizationSetBy = Automatic
+
+	column Cod_IBGE
+		dataType: int64
+		isHidden
+		lineageTag: 24ec952f-934e-5309-b436-0311cf37546d
+		summarizeBy: none
+		sourceColumn: Cod_IBGE
+
+		annotation SummarizationSetBy = Automatic
+
+	column Data_Cadastro
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		lineageTag: 6be7fe5c-7631-5bb5-89ad-f1def9510f40
+		summarizeBy: none
+		sourceColumn: Data_Cadastro
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Situacao
+		dataType: string
+		lineageTag: 73edef68-bea3-5456-a509-e4c0b0e7f68d
+		summarizeBy: none
+		sourceColumn: Situacao
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_Vendedor
+		dataType: int64
+		isHidden
+		lineageTag: 9ecfd3d8-52a6-5cdf-a9cf-2f58bea8e76d
+		summarizeBy: none
+		sourceColumn: ID_Vendedor
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Dim_Cliente = m
+		mode: import
+		source =
+				let
+				    Fonte = Excel.Workbook ( File.Contents ( CaminhoBaseCom ), null, true ),
+				    Planilha = Fonte{[Item = "Dim_Cliente", Kind = "Sheet"]}[Data],
+				    Cabecalho = Table.PromoteHeaders ( Planilha, [PromoteAllScalars = true] ),
+				    Tipos = Table.TransformColumnTypes ( Cabecalho, {
+				        {"ID_Cliente", Int64.Type},
+				        {"CNPJ", type text},
+				        {"Razao_Social", type text},
+				        {"Nome_Fantasia", type text},
+				        {"Ramo_Atividade", type text},
+				        {"Cod_IBGE", Int64.Type},
+				        {"Data_Cadastro", type date},
+				        {"Situacao", type text},
+				        {"ID_Vendedor", Int64.Type}
+				    } ),
+				    // Município/UF ficam só na Dim_Municipio (fonte única da geografia e do potencial)
+				    SemGeo = Table.RemoveColumns ( Tipos, { "Municipio", "UF" }, MissingField.Ignore ),
+				    Resultado = Table.AddColumn ( SemGeo, "Cliente_Rotulo", each [Nome_Fantasia] & " · " & [Ramo_Atividade], type text )
+				in
+				    Resultado
+
+	annotation PBI_ResultType = Table
+
