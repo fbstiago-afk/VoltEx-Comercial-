@@ -5,3 +5,4 @@
 *.pbism text eol=crlf
 *.png binary
 *.xlsx binary
+*.jpg binary

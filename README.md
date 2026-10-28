@@ -1,6 +1,23 @@
 # VoltEx Comercial — Projeto Power BI (.pbip)
 
+![Capa do painel VoltEx Comercial](docs/img/00_capa.jpg)
+
 Dashboard de performance comercial da VoltEx Baterias (marca fictícia, dados simulados): volume e faturamento, metas da Linha Leve por vendedor, cobertura e segmentação RFQ da carteira, share sobre o potencial de cada praça, SWOT de clientes, mix de produtos e sucata do programa EcoCiclo. Modelo em **TMDL**, relatório em **PBIR**, versionado em Git.
+
+## Telas
+
+| | |
+|---|---|
+| ![Visão Comercial](docs/img/01_visao_comercial.jpg) | ![Metas de Vendas](docs/img/02_metas_vendas.jpg) |
+| **1 · Visão Comercial** — volume, receita, cobertura, share e meta num relance; mês parcial destacado. | **2 · Metas de Vendas** — atingimento por vendedor com régua de 80% / 100% e tendência do mês corrente. |
+| ![Carteira e Cobertura](docs/img/03_carteira_cobertura.jpg) | ![Potencial e Share](docs/img/04_potencial_share.jpg) |
+| **3 · Carteira e Cobertura** — segmentos RFQ: quem compra muito, quem compra pouco, quem está esfriando. | **4 · Potencial e Share** — quanto do mercado de cada praça já é VoltEx e onde estão os prospects. |
+| ![SWOT da Carteira](docs/img/05_swot_carteira.jpg) | ![Mix de Produtos](docs/img/06_mix_produtos.jpg) |
+| **5 · SWOT da Carteira** — cada ponto é um cliente: porte × crescimento contra o ano anterior. | **6 · Mix de Produtos** — catálogo com fotos, peso no volume × peso no faturamento e preço médio. |
+| ![Sucata EcoCiclo](docs/img/07_sucata_ecociclo.jpg) | ![Painel de filtros](docs/img/08_painel_filtros.jpg) |
+| **7 · Sucata EcoCiclo** — cascos devidos por praça e faixa de atraso, e quem mais deve. | **Painel de filtros** — gaveta lateral com 6 filtros sincronizados e a trilha dos filtros ativos. |
+
+<p align="center"><img src="docs/img/09_tooltip_produto.jpg" alt="Tooltip de produto" width="70%"><br><em>Tooltip de produto com foto, catálogo oficial e indicadores do SKU.</em></p>
 
 ## Abrir
 
